@@ -1,0 +1,65 @@
+/* eslint-disable sort-keys */
+/* eslint-disable perfectionist/sort-objects */
+const lolite = {
+  compact: require("./lib/compact"),
+  flatten: require("./lib/flatten"),
+
+  add: require("./lib/add"),
+  subtract: require("./lib/subtract"),
+  multiply: require("./lib/multiply"),
+  divide: require("./lib/divide"),
+  invert: require("./lib/invert"),
+  abs: require("./lib/abs"),
+  sign: require("./lib/sign"),
+  power: require("./lib/power"),
+  modulo: require("./lib/modulo"),
+  floor: require("./lib/floor"),
+  ceil: require("./lib/ceil"),
+  round: require("./lib/round"),
+  trunc: require("./lib/trunc"),
+  max: require("./lib/max"),
+  min: require("./lib/min"),
+  clamp: require("./lib/clamp"),
+
+  and: require("./lib/and"),
+  or: require("./lib/or"),
+  not: require("./lib/not"),
+  nand: require("./lib/nand"),
+  nor: require("./lib/nor"),
+  xor: require("./lib/xor"),
+  xnor: require("./lib/xnor"),
+
+  isTruthy: require("./lib/isTruthy"),
+  isFalsy: require("./lib/isFalsy"),
+
+  isUndefined: require("./lib/isUndefined"),
+  isNull: require("./lib/isNull"),
+  isNil: require("./lib/isNil"),
+  isBoolean: require("./lib/isBoolean"),
+  isNumber: require("./lib/isNumber"),
+  isBigInt: require("./lib/isBigInt"),
+  isString: require("./lib/isString"),
+  isSymbol: require("./lib/isSymbol"),
+  isPrimitive: require("./lib/isPrimitive"),
+
+  isObject: require("./lib/isObject"),
+  isFunction: require("./lib/isFunction"),
+  isArray: require("./lib/isArray"),
+  isMap: require("./lib/isMap"),
+  isWeakMap: require("./lib/isWeakMap"),
+  isSet: require("./lib/isSet"),
+  isWeakSet: require("./lib/isWeakSet"),
+  isPlainObject: require("./lib/isPlainObject"),
+  isNonNullObject: require("./lib/isNonNullObject"),
+  isNaN: require("./lib/isNaN"),
+  isFinite: require("./lib/isFinite"),
+  isInteger: require("./lib/isInteger"),
+  isSafeInteger: require("./lib/isSafeInteger"),
+  isArguments: require("./lib/isArguments"),
+  
+  noop: require("./lib/noop"),
+  identity: require("./lib/identity"),
+  constant: require("./lib/constant")
+}
+
+module.exports = lolite
