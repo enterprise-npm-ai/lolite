@@ -2049,6 +2049,20 @@ module.exports = stubFalse
 
 /***/ },
 
+/***/ "./src/lib/stubNaN.js"
+/*!****************************!*\
+  !*** ./src/lib/stubNaN.js ***!
+  \****************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+const constant = __webpack_require__(/*! ./constant */ "./src/lib/constant.js"),
+  // eslint-disable-next-line no-implicit-coercion
+  nan = +-/./u,
+  stubNaN = constant(nan)
+module.exports = stubNaN
+
+/***/ },
+
 /***/ "./src/lib/stubNull.js"
 /*!*****************************!*\
   !*** ./src/lib/stubNull.js ***!
@@ -2401,7 +2415,8 @@ const lolite = {
   stubUndefined: __webpack_require__(/*! ./lib/stubUndefined */ "./src/lib/stubUndefined.js"),
   stubNull: __webpack_require__(/*! ./lib/stubNull */ "./src/lib/stubNull.js"),
   stubTrue: __webpack_require__(/*! ./lib/stubTrue */ "./src/lib/stubTrue.js"),
-  stubFalse: __webpack_require__(/*! ./lib/stubFalse */ "./src/lib/stubFalse.js")
+  stubFalse: __webpack_require__(/*! ./lib/stubFalse */ "./src/lib/stubFalse.js"),
+  stubNaN: __webpack_require__(/*! ./lib/stubNaN */ "./src/lib/stubNaN.js"),
 }
 
 module.exports = lolite

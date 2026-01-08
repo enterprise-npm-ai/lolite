@@ -10,6 +10,8 @@ LoLite is a 10x enterprise-grade utility suite designed for productive and high-
 * [Linting](#linting)
 * [Building](#building)
 * [License](#license)
+* [Code Of Conduct](#code-of-conduct)
+* [Contributing](#contributing)
 * [Notice](#notice)
 * [Documentation](#documentation)
   * [Array Utilities](#array-utilities)
@@ -18,7 +20,6 @@ LoLite is a 10x enterprise-grade utility suite designed for productive and high-
   * [Validation Utilities](#validation-utilities)
   * [Simple Function Utilities](#simple-function-utilities)
 * [Extended Documentation](#extended-documentation)
-* [Contributing](#contributing)
 ## Installation
 As per 10x'ness, LoLite comes with many ways to install it.
 
@@ -89,6 +90,12 @@ LoLite uses Webpack to build all of its source code into one file.
 
 ## License
 [EGPSL10X-1.0](https://github.com/enterprise-npm-ai/EGPSL10X-1.0)
+
+## Code Of Conduct
+See the [CODE_OF_CONDUCT](https://github.com/enterprise-npm-ai/lolite/blob/main/CODE_OF_CONDUCT.md) file.
+
+## Contributing
+See the [CONTRIBUTING](https://github.com/enterprise-npm-ai/lolite/blob/main/CONTRIBUTING.md) file.
 
 ## Notice
 PLEASE STAR THIS REPO!!!!!!!!!! I SPENT DAYS MAKING THIS, AND HARDLY ANYONE RECOGNIZES WHAT I'VE DONE! SHARE THIS WITH YOUR FRIENDS! PLEASE!
@@ -904,6 +911,13 @@ const lolite = require("lolite")
 console.log(lolite.stubFalse()) // false
 ```
 
+### stubNaN()
+Returns the primitive value NaN.
+```javascript
+const lolite = require("lolite")
+console.log(lolite.stubNaN()) // NaN
+```
+
 # EXTENDED DOCUMENTATION
 LoLite contains some private utilities in its code that it uses internally. You probably don't want to use these, unless you have a really good reason to. You must require them manually with the require path.
 
@@ -961,6 +975,3 @@ console.log(isNotInteger("test")) // true
 
 ### `__using_development__` in `isFunction`
 This internal feature is not a private function, it's a hidden argument in the `isFunction` function. The parameter is called `__using_development__`, and if it's on, it defines a getter on the value passed in for `Symbol.toStringTag`. The reason for this is that LoLite internally has a file that requires some other file that ends up requiring the first file. You might think this crashes the program, but it doesn't, because when you do infinite require loop like that Node.js cuts off the loop and makes it so when you require it it just returns an empty object. LoLite checks if the required file is not a function using `isFunction`, and if it is not a function, reassigns it to a fallback. However, the empty object that Node.js returns is actually an object but without any of the Object.prototype properties, so it doesn't have `Symbol.toStringTag` as a property. When it uses `isFunction`, it checks the toStringTag of the value to check if it's a function. This triggers a Node.js warning for accessing non-existent property `Symbol.toStringTag` on object. This is where the `__using_development__` parameter comes in. It stops this Node.js internal warning.
-
-# Contributing
-PLEASE CONTRIBUTE!!!!!!!!!!!!!!!!!!!!!!!!!!!1

@@ -448,3 +448,9 @@ export function stubTrue(): boolean
  * @returns False
  */
 export function stubFalse(): boolean
+
+/**
+ * Returns NaN.
+ * @returns NaN
+ */
+export function stubNaN(): number

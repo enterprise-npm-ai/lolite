@@ -1720,6 +1720,28 @@ enterpriseTest("Lolite Enterprise-Grade Tests", (assert) => {
     lolite.stubFalse(True()) === falseValue(),
     "stubFalse should return false even when passed true\n"
   )
+
+  // --- STUB NAN ---
+  assert(
+    lolite.isFunction(lolite.stubNaN),
+    "stubNaN should be a function"
+  )
+  assert(
+    isnan(lolite.stubNaN()),
+    "stubNaN should return NaN"
+  )
+  assert(
+    isnan(lolite.stubNaN(1, 2, 3)),
+    "stubNaN should ignore arguments and return NaN"
+  )
+  assert(
+    isnan(lolite.stubNaN("anything")),
+    "stubNaN should always return NaN regardless of input"
+  )
+  assert(
+    lolite.stubNaN() !== lolite.stubNaN(),
+    "stubNaN should return NaN which is not equal to itself\n"
+  )
 })
 
 printAuditSummary()
