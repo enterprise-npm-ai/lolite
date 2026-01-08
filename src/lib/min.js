@@ -9,7 +9,7 @@ const isFinite = require("@is-(unknown)/is-finite")
 const falseValue = require("false-value")
 
 // eslint-disable-next-line id-length
-function max(a, b) {
+function min(a, b) {
   // eslint-disable-next-line id-length
   let x = a,
     // eslint-disable-next-line id-length
@@ -33,4 +33,4 @@ function max(a, b) {
   return sorted[number0]
 }
 
-module.exports = max
+module.exports = min

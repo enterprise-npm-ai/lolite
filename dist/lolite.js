@@ -1536,7 +1536,7 @@ const isFinite = __webpack_require__(/*! @is-(unknown)/is-finite */ "@is-(unknow
 const falseValue = __webpack_require__(/*! false-value */ "false-value")
 
 // eslint-disable-next-line id-length
-function max(a, b) {
+function min(a, b) {
   // eslint-disable-next-line id-length
   let x = a,
     // eslint-disable-next-line id-length
@@ -1560,7 +1560,7 @@ function max(a, b) {
   return sorted[number0]
 }
 
-module.exports = max
+module.exports = min
 
 
 /***/ },
@@ -2401,7 +2401,7 @@ const lolite = {
   stubUndefined: __webpack_require__(/*! ./lib/stubUndefined */ "./src/lib/stubUndefined.js"),
   stubNull: __webpack_require__(/*! ./lib/stubNull */ "./src/lib/stubNull.js"),
   stubTrue: __webpack_require__(/*! ./lib/stubTrue */ "./src/lib/stubTrue.js"),
-  stubFalse: __webpack_require__(/*! ./lib/stubFalse */ "./src/lib/stubFalse.js"),
+  stubFalse: __webpack_require__(/*! ./lib/stubFalse */ "./src/lib/stubFalse.js")
 }
 
 module.exports = lolite
