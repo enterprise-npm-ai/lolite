@@ -1,211 +1,77 @@
-#!/usr/bin/env node
-
-const fs = require("fs").promises
-const { existsSync } = require("fs")
+const fs = require("fs")
 const path = require("path")
+const { execSync } = require("child_process")
+const crypto = require("crypto")
 
-const FORCED_DEPENDENCIES = {
-  "lolite.__private.date": ["date"]
+const PACKAGES_DIR = path.join(__dirname, "..", "packages")
+
+if (!fs.existsSync(PACKAGES_DIR)) {
+  console.error("Packages directory not found. Run 'npm run buildPackages' first.")
+  process.exit(1)
 }
 
-/* -------------------------------------------------- */
-/* Logging helpers                                    */
-/* -------------------------------------------------- */
-const log = (msg) => console.log(`🔍 ${msg}`)
-const step = (msg) => console.log(`📦 ${msg}`)
-const done = (msg) => console.log(`✅ ${msg}`)
-
-/* -------------------------------------------------- */
-/* Paths & inputs                                     */
-/* -------------------------------------------------- */
-const ROOT = path.resolve(__dirname, "..")
-const SRC = path.join(ROOT, "src")
-const LIB = path.join(SRC, "lib")
-const PRIVATE = path.join(SRC, "private")
-const DIST = path.join(ROOT, "packages")
-
-const parentPkg = require(path.join(ROOT, "package.json"))
-let parentReadme = ""
-
-/* -------------------------------------------------- */
-/* Utilities & Caching                                */
-/* -------------------------------------------------- */
-const toLower = (s) => s.toLowerCase()
-const scanCache = new Map()
-
-async function getJsFiles(dir) {
-  if (!existsSync(dir)) return []
-  const files = await fs.readdir(dir)
-  return files.filter((f) => f.endsWith(".js"))
-}
-
-function parseRequires(code) {
-  const regex = /require\(["']([^"']+)["']\)/g
-  const out = []
-  let match
-  while ((match = regex.exec(code))) {
-    out.push(match[1])
-  }
-  return out
-}
-
-function getExternalPackage(dep) {
-  if (dep.startsWith("@")) {
-    return dep.split("/").slice(0, 2).join("/")
-  }
-  return dep.split("/")[0]
-}
-
-/* -------------------------------------------------- */
-/* Dependency collection (Optimized with Cache)       */
-/* -------------------------------------------------- */
-async function collectDeps(entryFile, seenFiles = new Set(), externalDeps = new Set()) {
-  if (seenFiles.has(entryFile)) return { seenFiles, externalDeps }
-  seenFiles.add(entryFile)
-
-  // Use cache to avoid re-reading and re-parsing the same file across different packages
-  let data
-  if (scanCache.has(entryFile)) {
-    data = scanCache.get(entryFile)
-  } else {
-    const code = await fs.readFile(entryFile, "utf8")
-    const requires = parseRequires(code)
-    data = { code, requires }
-    scanCache.set(entryFile, data)
-  }
-
-  for (const req of data.requires) {
-    if (req.startsWith("./") || req.startsWith("../")) {
-      const resolvedBase = path.resolve(path.dirname(entryFile), req)
-      const file = existsSync(resolvedBase) 
-        ? resolvedBase 
-        : existsSync(`${resolvedBase}.js`) 
-          ? `${resolvedBase}.js` 
-          : null
-
-      if (file) {
-        await collectDeps(file, seenFiles, externalDeps)
-      }
-    } else {
-      const pkg = getExternalPackage(req)
-      externalDeps.add(pkg)
-    }
-  }
-
-  return { seenFiles, externalDeps }
-}
-
-/* -------------------------------------------------- */
-/* README rewriting                                   */
-/* -------------------------------------------------- */
-function rewritePublicExamples(text, name) {
-  return text
-    .replace(/require\(["']lolite["']\)/g, `require("lolite.${name}")`)
-    .replace(new RegExp(`lolite\\.${name}\\(`, "g"), `${name}(`)
-}
-
-function rewritePrivateExamples(text, name) {
-  return text.replace(/require\(["']lolite["']\)\.__private\.[A-Za-z0-9_]+/g, `require("lolite.__private.${name}")`)
-}
-
-function extractPublicReadme(name) {
-  const regex = new RegExp(`##\\s+${name}\\([^)]*\\)[\\s\\S]*?(?=\\n###|$)`, "i")
-  const match = parentReadme.match(regex)
-  if (!match) return `## ${name}\n\nNo documentation available.\n`
-  return rewritePublicExamples(match[0], name)
-}
-
-function extractPrivateReadme(name) {
-  const fileName = `${name}.js`
-  const regex = new RegExp(`###\\s+\`${fileName}\`[\\s\\S]*?(?=\\n###|$)`, "i")
-  const match = parentReadme.match(regex)
-  if (!match) return `## ${name}\n\nNo documentation available.\n`
-  return rewritePrivateExamples(match[0], name)
-}
-
-/* -------------------------------------------------- */
-/* Package builder (Parallel-ready)                   */
-/* -------------------------------------------------- */
-async function buildPackage(name, entryFile, type) {
-  const cleanName = toLower(name.replace("__private.", ""))
-  const pkgName = type === "private" ? `lolite.__private.${cleanName}` : `lolite.${cleanName}`
-
-  const pkgDir = path.join(DIST, pkgName)
-  const srcDir = path.join(pkgDir, "src")
-
-  step(`Building ${pkgName}...`)
-
-  await fs.mkdir(srcDir, { recursive: true })
-
-  const { seenFiles, externalDeps } = await collectDeps(entryFile)
-
-  // Copy internal files in parallel
-  await Promise.all(Array.from(seenFiles).map(async (file) => {
-    const rel = path.relative(SRC, file)
-    const dest = path.join(srcDir, rel)
-    await fs.mkdir(path.dirname(dest), { recursive: true })
-    return fs.copyFile(file, dest)
-  }))
-
-  const dependencies = {}
-  const allDeps = new Set([...externalDeps, ...(FORCED_DEPENDENCIES[pkgName] || [])])
+const getLocalHash = (pkgPath) => {
+  // Generate a dry-run tarball to get a consistent content hash
+  const tarballName = execSync("npm pack --silent", { cwd: pkgPath }).toString().trim()
+  const tarballPath = path.join(pkgPath, tarballName)
+  const fileBuffer = fs.readFileSync(tarballPath)
+  const hash = crypto.createHash("sha1").update(fileBuffer).digest("hex")
   
-  for (const dep of allDeps) {
-    if (parentPkg.dependencies?.[dep]) {
-      dependencies[dep] = parentPkg.dependencies[dep]
+  // Cleanup the temporary tarball
+  fs.unlinkSync(tarballPath)
+  return hash
+}
+
+const packages = fs.readdirSync(PACKAGES_DIR)
+
+console.log(`Analyzing ${packages.length} packages for enterprise-grade changes...\n`)
+
+packages.forEach((pkg) => {
+  const pkgPath = path.join(PACKAGES_DIR, pkg)
+  if (!fs.statSync(pkgPath).isDirectory()) return
+
+  const pkgJsonPath = path.join(pkgPath, "package.json")
+  if (!fs.existsSync(pkgJsonPath)) return
+
+  const pkgJson = require(pkgJsonPath)
+  const name = pkgJson.name
+  const version = pkgJson.version
+
+  try {
+    let remoteInfo = null
+    try {
+      remoteInfo = JSON.parse(execSync(`npm view ${name} --json`, { stdio: "pipe" }).toString())
+    } catch (e) {
+      // Package doesn't exist on npm yet
     }
-  }
 
-  const main = type === "private" ? `src/private/${cleanName}.js` : `src/lib/${cleanName}.js`
+    // 1. Check if the version is already published
+    if (remoteInfo && remoteInfo.versions && remoteInfo.versions.includes(version)) {
+      // 2. If version exists, check if the content has actually changed
+      const remoteHash = remoteInfo.dist.shasum
+      const localHash = getLocalHash(pkgPath)
 
-  const pkgJson = {
-    name: pkgName,
-    version: parentPkg.version,
-    main,
-    license: parentPkg.license,
-    author: parentPkg.author,
-    repository: parentPkg.repository,
-    dependencies,
-  }
+      if (remoteHash === localHash) {
+        console.log(`[SKIP] ${name}@${version} - Content is identical to registry.`)
+        return
+      } else {
+        console.log(`[NOTICE] ${name}@${version} - Content changed but version is same. Manual version bump required?`)
+        // Usually npm won't let you publish the same version twice, 
+        // but this logic detects the discrepancy.
+        return
+      }
+    }
 
-  const readme = type === "private" ? extractPrivateReadme(cleanName) : extractPublicReadme(cleanName)
-
-  await Promise.all([
-    fs.writeFile(path.join(pkgDir, "package.json"), JSON.stringify(pkgJson, null, 2)),
-    fs.writeFile(path.join(pkgDir, "README.md"), readme)
-  ])
-
-  done(`${pkgName} complete.`)
-}
-
-/* -------------------------------------------------- */
-/* Execution                                          */
-/* -------------------------------------------------- */
-async function main() {
-  if (!existsSync(DIST)) {
-    await fs.mkdir(DIST)
-  }
-
-  parentReadme = await fs.readFile(path.join(ROOT, "README.md"), "utf8")
-
-  const [libFiles, privateFiles] = await Promise.all([
-    getJsFiles(LIB),
-    getJsFiles(PRIVATE)
-  ])
-
-  const tasks = [
-    ...libFiles.map(file => {
-      const name = path.basename(file, ".js")
-      return buildPackage(name, path.join(LIB, file), "lib")
-    }),
-    ...privateFiles.map(file => {
-      const name = path.basename(file, ".js")
-      return buildPackage(`__private.${name}`, path.join(PRIVATE, file), "private")
+    console.log(`[PUBLISHING] ${name}@${version}...`)
+    execSync("npm publish --access public", {
+      cwd: pkgPath,
+      stdio: "inherit"
     })
-  ]
+    console.log(`[SUCCESS] ${name} deployed.\n`)
 
-  await Promise.all(tasks)
-  done("All LoLite packages generated successfully. 🎉")
-}
+  } catch (error) {
+    console.error(`[ERROR] Failed to process ${name}:`, error.message)
+  }
+})
 
-main().catch(console.error)
+console.log("Enterprise deployment sequence complete.")

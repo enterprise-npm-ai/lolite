@@ -1,6 +1,6 @@
 {
   "name": "lolite.multiply",
-  "version": "1.1.11",
+  "version": "1.1.14",
   "main": "src/lib/multiply.js",
   "license": "EGPSL10X-1.0",
   "author": "10x'ly Made Software Ventures AB",
