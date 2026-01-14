@@ -12,8 +12,5 @@
   "bugs": {
     "url": "https://github.com/enterprise-npm-ai/lolite/issues"
   },
-  "homepage": "https://github.com/enterprise-npm-ai/lolite#readme",
-  "dependencies": {
-    "@is-(unknown)/is-non-null-object": "^1.0.1"
-  }
+  "homepage": "https://github.com/enterprise-npm-ai/lolite#readme"
 }

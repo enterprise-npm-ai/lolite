@@ -76,6 +76,9 @@ Or, if you're using ESM, this:
 import * as lolite from "lolite"
 ```
 
+## Individual packages
+Only want one method from lolite? Well there are packages with individual lolite methods. For example, instead of installing `lolite` and using `lolite.add`, just install the package `lolite.add`. Or for private methods, like `lolite.__private.isNotInteger`, install the package `lolite.__private.isnotinteger`. All lowercase.
+
 ## What is this?
 Ever wanted a 10x utility library? this library is part of [the 10x engineering maximalism project](https://github.com/enterprise-npm-ai) / 10x'ly Made. We believe in no direct primitive use, and extreme modularism and the SOMOM,TYPRPL responsibility principle (Single/Minimal Or Maximal, Take Your Pick Responsibility Principal). 
 

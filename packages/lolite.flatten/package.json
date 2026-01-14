@@ -16,10 +16,7 @@
   "dependencies": {
     "false-value": "^2.0.6",
     "true-value": "^2.0.5",
-    "@is-(unknown)/is-false": "^1.5.0",
-    "@is-(unknown)/is-true": "^1.5.0",
     "array-filter": "^1.0.0",
-    "@is-(unknown)/is-array": "^1.0.0",
     "@10xly/strict-equals": "^1.0.0",
     "@not-js/not": "^1.1.0",
     "@positive-numbers/one": "^3.0.0",

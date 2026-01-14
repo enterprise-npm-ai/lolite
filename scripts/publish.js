@@ -1,6 +1,7 @@
 const fs = require("fs")
 const path = require("path")
 const { execSync } = require("child_process")
+const crypto = require("crypto")
 
 const PACKAGES_DIR = path.join(__dirname, "..", "packages")
 
@@ -9,13 +10,24 @@ if (!fs.existsSync(PACKAGES_DIR)) {
   process.exit(1)
 }
 
+const getLocalHash = (pkgPath) => {
+  // Generate a dry-run tarball to get a consistent content hash
+  const tarballName = execSync("npm pack --silent", { cwd: pkgPath }).toString().trim()
+  const tarballPath = path.join(pkgPath, tarballName)
+  const fileBuffer = fs.readFileSync(tarballPath)
+  const hash = crypto.createHash("sha1").update(fileBuffer).digest("hex")
+  
+  // Cleanup the temporary tarball
+  fs.unlinkSync(tarballPath)
+  return hash
+}
+
 const packages = fs.readdirSync(PACKAGES_DIR)
 
-console.log(`Starting enterprise deployment for ${packages.length} packages...\n`)
+console.log(`Analyzing ${packages.length} packages for enterprise-grade changes...\n`)
 
 packages.forEach((pkg) => {
   const pkgPath = path.join(PACKAGES_DIR, pkg)
-  
   if (!fs.statSync(pkgPath).isDirectory()) return
 
   const pkgJsonPath = path.join(pkgPath, "package.json")
@@ -26,36 +38,39 @@ packages.forEach((pkg) => {
   const version = pkgJson.version
 
   try {
-    console.log(`Checking status: ${name}@${version}`)
-    
-    // Check if version already exists to avoid 403/409 errors
-    let isPublished = false
+    let remoteInfo = null
     try {
-      const remoteVersion = execSync(`npm view ${name} version`, { stdio: "pipe" }).toString().trim()
-      if (remoteVersion === version) {
-        isPublished = true
-      }
+      remoteInfo = JSON.parse(execSync(`npm view ${name} --json`, { stdio: "pipe" }).toString())
     } catch (e) {
-      // Package might not exist yet, which is fine
+      // Package doesn't exist on npm yet
     }
 
-    if (isPublished) {
-      console.log(`[SKIP] ${name}@${version} is already live.`)
-      return
+    // 1. Check if the version is already published
+    if (remoteInfo && remoteInfo.versions && remoteInfo.versions.includes(version)) {
+      // 2. If version exists, check if the content has actually changed
+      const remoteHash = remoteInfo.dist.shasum
+      const localHash = getLocalHash(pkgPath)
+
+      if (remoteHash === localHash) {
+        console.log(`[SKIP] ${name}@${version} - Content is identical to registry.`)
+        return
+      } else {
+        console.log(`[NOTICE] ${name}@${version} - Content changed but version is same. Manual version bump required?`)
+        // Usually npm won't let you publish the same version twice, 
+        // but this logic detects the discrepancy.
+        return
+      }
     }
 
-    console.log(`[PUBLISHING] ${name}...`)
-    
-    // Using --access public for scoped packages (@lolite/...) 
-    // though your current names are lolite.name
+    console.log(`[PUBLISHING] ${name}@${version}...`)
     execSync("npm publish --access public", {
       cwd: pkgPath,
       stdio: "inherit"
     })
-
     console.log(`[SUCCESS] ${name} deployed.\n`)
+
   } catch (error) {
-    console.error(`[ERROR] Failed to publish ${name}:`, error.message)
+    console.error(`[ERROR] Failed to process ${name}:`, error.message)
   }
 })
 

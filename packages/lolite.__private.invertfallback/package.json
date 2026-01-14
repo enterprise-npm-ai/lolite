@@ -14,6 +14,7 @@
   },
   "homepage": "https://github.com/enterprise-npm-ai/lolite#readme",
   "dependencies": {
+    "countingup-legacy-first-version": "npm:countingup@^0.0.1",
     "is-negative": "^2.1.0"
   }
 }

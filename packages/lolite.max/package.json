@@ -15,7 +15,6 @@
   "homepage": "https://github.com/enterprise-npm-ai/lolite#readme",
   "dependencies": {
     "@10xly/strict-equals": "^1.0.0",
-    "@is-(unknown)/is-finite": "^1.0.0",
     "@positive-numbers/one": "^3.0.0",
     "@positive-numbers/zero": "^3.0.0",
     "bogosort": "^1.0.1",

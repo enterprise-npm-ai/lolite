@@ -16,11 +16,13 @@ const getDocsForMethod = (methodName, pkgName) => {
   
   let docs = match[0].trim()
   
-  // Replace the monolithic require with the atomic one
-  const monolithRequireRegex = /const\s+lolite\s+=\s+require\("lolite"\)/g
-  docs = docs.replace(monolithRequireRegex, `const ${methodName} = require(\"${pkgName}\")`)
+  // Truncate at EXTENDED DOCUMENTATION to prevent leaking internal docs into atomic readmes
+  if (docs.includes("# EXTENDED DOCUMENTATION")) {
+    docs = docs.split("# EXTENDED DOCUMENTATION")[0].trim()
+  }
   
-  // Replace lolite.method calls with just method calls
+  const monolithRequireRegex = /const\s+lolite\s+=\s+require\("lolite"\)/g
+  docs = docs.replace(monolithRequireRegex, `const ${methodName} = require("${pkgName}")`)
   docs = docs.replace(new RegExp(`lolite\\.${methodName}(?!")`, "g"), methodName)
   
   return docs
@@ -68,16 +70,27 @@ allSrcFiles.forEach((fullPath) => {
 
   const processFile = (sourcePath, destFileName) => {
     let fileContent = fs.readFileSync(sourcePath, "utf8")
+    // Target both relative and absolute-looking local requires
     const requireRegex = /require\("(\.\.?\/.*)"\)/g
     let match
 
     while ((match = requireRegex.exec(fileContent)) !== null) {
       const originalImport = match[0]
       const relativeImportPath = match[1]
-      const absolutePath = path.resolve(path.dirname(sourcePath), relativeImportPath) + ".js"
-      const depName = path.basename(absolutePath, ".js")
+      let absolutePath = path.resolve(path.dirname(sourcePath), relativeImportPath)
+      
+      // Node.js Resolution Logic: Check .js, then /index.js
+      if (!absolutePath.endsWith(".js") && !fs.existsSync(absolutePath + ".js")) {
+        const indexPath = path.join(absolutePath, "index.js")
+        if (fs.existsSync(indexPath)) {
+          absolutePath = indexPath
+        }
+      } else if (fs.existsSync(absolutePath + ".js")) {
+        absolutePath += ".js"
+      }
 
-      if (fs.existsSync(absolutePath)) {
+      if (fs.existsSync(absolutePath) && absolutePath.endsWith(".js")) {
+        const depName = path.basename(absolutePath, ".js")
         const newLocalName = depName + ".js"
         const destPath = path.join(pkgDir, newLocalName)
         
@@ -85,12 +98,15 @@ allSrcFiles.forEach((fullPath) => {
           fs.copyFileSync(absolutePath, destPath)
           processFile(absolutePath, newLocalName)
         }
-        fileContent = fileContent.replace(originalImport, `require(\"./${depName}\")`)
+        fileContent = fileContent.replace(originalImport, `require("./${depName}")`)
       }
     }
 
+    // Improved dependency detection for packages like 'date' or '@is-(unknown)/...'
     Object.keys(MAIN_PKG.dependencies).forEach((dep) => {
-      if (fileContent.includes(`require(\"${dep}\")`)) {
+      // Matches require("dep") or require("dep/path")
+      const depRegex = new RegExp(`require\\("${dep}(?:\/.*)?"\\)`)
+      if (depRegex.test(fileContent)) {
         pkgJson.dependencies[dep] = MAIN_PKG.dependencies[dep]
       }
     })
@@ -101,11 +117,10 @@ allSrcFiles.forEach((fullPath) => {
   processFile(fullPath, "index.js")
 
   if (Object.keys(pkgJson.dependencies).length === 0) delete pkgJson.dependencies
-  
   fs.writeFileSync(path.join(pkgDir, "package.json"), JSON.stringify(pkgJson, null, 2))
   
   const finalReadme = `# ${pkgName}\n\n${getDocsForMethod(fileName, pkgName)}\n\nThis utility is part of the [LoLite](https://github.com/enterprise-npm-ai/lolite) utility suite.`
   fs.writeFileSync(path.join(pkgDir, "README.md"), finalReadme)
 })
 
-console.log("Atomic packages with corrected metadata and READMEs generated.")
+console.log("Atomic packages generated with smart dependency detection and clean READMEs.")
