@@ -1,0 +1,8 @@
+{
+  "name": "lolite.isnonnullobject",
+  "version": "1.1.6",
+  "main": "index.js",
+  "dependencies": {
+    "@is-(unknown)/is-non-null-object": "^1.0.1"
+  }
+}

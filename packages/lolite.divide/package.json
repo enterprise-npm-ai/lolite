@@ -1,0 +1,19 @@
+{
+  "name": "lolite.divide",
+  "version": "1.1.6",
+  "main": "index.js",
+  "dependencies": {
+    "@10xly/strict-equals": "^1.0.0",
+    "@is-(unknown)/is-finite": "^1.0.0",
+    "@positive-numbers/zero": "^3.0.0",
+    "array-includes": "^3.1.9",
+    "const": "^1.0.0",
+    "false-value": "^2.0.6",
+    "infinities": "^1.0.1",
+    "is-negative-zero": "^2.0.3",
+    "iszero": "^1.0.0",
+    "map-values": "^1.0.1",
+    "nan-is-a-function": "^67.67.67",
+    "object.values": "^1.2.1"
+  }
+}

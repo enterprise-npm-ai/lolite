@@ -148,6 +148,34 @@ const testArray = [0, 1, 2]
 console.log(lolite.last(testArray)) // 2
 ```
 
+### initial(array)
+Returns all but the last element of an array. Returns undefined for non-arrays.
+```js
+const lolite = require("lolite")
+const result = lolite.initial([1, 2, 3])
+// result: [1, 2]
+
+const single = lolite.initial([1])
+// result: []
+
+const undef = lolite.initial("Not an array")
+// result: undefined
+```
+
+### tail(array)
+Returns all but the first element of an array. Returns undefined for non-arrays.
+```js
+const lolite = require("lolite")
+const result = lolite.tail([1, 2, 3])
+// result: [2, 3]
+
+const single = lolite.tail([1])
+// result: []
+
+const undef = lolite.tail(null)
+// result: undefined
+```
+
 ---
 
 ## MATH UTILITIES
@@ -833,6 +861,23 @@ assert.ok(!lolite.isInteger(null))        // null is not an integer
 assert.ok(!lolite.isInteger(undefined))   // undefined is not an integer
 ```
 
+### isSafeInteger(value)
+Check if a value is a safe integer primitive.
+```javascript
+const lolite = require("lolite")
+const assert = require("node:assert")
+
+assert.ok(lolite.isSafeInteger(42))
+assert.ok(lolite.isSafeInteger(Number.MAX_SAFE_INTEGER))
+assert.ok(lolite.isSafeInteger(Number.MIN_SAFE_INTEGER))
+
+assert.ok(!lolite.isSafeInteger(Math.pow(2, 53))) // Out of bounds
+assert.ok(!lolite.isSafeInteger(3.14))            // Not an integer
+assert.ok(!lolite.isSafeInteger(Infinity))        // Not finite
+assert.ok(!lolite.isSafeInteger("42"))            // String primitive
+assert.ok(!lolite.isSafeInteger(42n))             // BigInt is not a Number primitive
+```
+
 ### isArguments(value)
 Check if a value is an `arguments` object.
 ```javascript
@@ -896,6 +941,10 @@ console.log(returnEnterprise()) // "enterprise"
 
 ### stubUndefined()
 Returns the primitive value undefined.
+```javascript
+const lolite = require("lolite")
+console.log(lolite.stubUndefined()) // undefined
+```
 
 ### stubTrue()
 Returns the primitive boolean value true.
@@ -916,6 +965,13 @@ Returns the primitive value NaN.
 ```javascript
 const lolite = require("lolite")
 console.log(lolite.stubNaN()) // NaN
+```
+
+### stubNull()
+Returns the primitive value null.
+```javascript
+const lolite = require("lolite")
+console.log(lolite.stubNull()) // null
 ```
 
 # EXTENDED DOCUMENTATION
@@ -959,7 +1015,7 @@ assert.ok($Date === Date)
 ### `invertFallback.js`
 A fallback implementation of `lolite.invert` to avoid circular dependencies. No non-finite-to-zero coercion is in this implementation.
 ```javascript
-const invert = require("lolite").__private.invert
+const invert = require("lolite").__private.invertFallback
 console.log(invert(1)) // -1
 console.log(invert(-1)) // 1
 console.log(invert("hi")) // "hi" (normal lolite.invert would return -0)

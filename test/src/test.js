@@ -3,7 +3,7 @@ const {
   printAuditSummary,
 } = require("enterprise-10x-testing-framework-js")
 
-const lolite = require("../dist/lolite")
+const lolite = require("../../dist/lolite")
 
 const zero = require("@positive-numbers/zero")
 const one = require("@positive-numbers/one")
@@ -73,9 +73,9 @@ enterpriseTest("Lolite Enterprise-Grade Tests", (assert) => {
     "first should return the same object reference"
   )
   
-  const noop = () => {}
+  const noopFn = () => {}
   assert(
-    lolite.first([noop, () => {}]) === noop,
+    lolite.first([noopFn, () => {}]) === noopFn,
     "first should return the same function reference"
   )
   

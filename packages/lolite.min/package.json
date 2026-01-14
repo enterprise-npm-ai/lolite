@@ -1,0 +1,15 @@
+{
+  "name": "lolite.min",
+  "version": "1.1.6",
+  "main": "index.js",
+  "dependencies": {
+    "@10xly/strict-equals": "^1.0.0",
+    "@is-(unknown)/is-finite": "^1.0.0",
+    "@positive-numbers/one": "^3.0.0",
+    "@positive-numbers/zero": "^3.0.0",
+    "bogosort": "^1.0.1",
+    "false-value": "^2.0.6",
+    "lodash.stubarray": "^4.13.0",
+    "lodash.toarray": "^4.4.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "lolite.__private.arrayofallbooleans",
+  "version": "1.1.6",
+  "main": "index.js",
+  "dependencies": {
+    "false-value": "^2.0.6",
+    "true-value": "^2.0.5"
+  }
+}

@@ -1,7 +1,6 @@
 stuff
 t.js
 webpack.config.js
-test/
 .git/
 node_modules/
 build/
@@ -9,3 +8,5 @@ build/
 .github/
 t.txt
 test.json
+packages/
+scripts/

@@ -1,0 +1,18 @@
+{
+  "name": "lolite.__private.isnotinteger",
+  "version": "1.1.6",
+  "main": "index.js",
+  "dependencies": {
+    "lodash.multiply": "^4.9.0",
+    "immediate-error": "^7.1.0",
+    "integer-values": "^2.0.0",
+    "is-not-integer": "^1.0.2",
+    "logtoconsole": "^1.0.7",
+    "@not-js/not": "^1.1.0",
+    "es-logical-not-operator": "^1.0.0",
+    "is-integer": "^1.0.7",
+    "literally": "^1.0.0",
+    "not-not": "^1.0.2",
+    "yanoop": "^1.0.0"
+  }
+}

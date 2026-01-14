@@ -1,0 +1,11 @@
+{
+  "name": "lolite.isarguments",
+  "version": "1.1.6",
+  "main": "index.js",
+  "dependencies": {
+    "@10xly/strict-equals": "^1.0.0",
+    "@extremejs/utils": "^1.0.0-beta.22",
+    "extract-stringtag": "^1.0.1",
+    "uncurried-intrinsics": "^1.0.2"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "lolite.__private.crash",
+  "version": "1.1.6",
+  "main": "index.js",
+  "dependencies": {
+    "lodash.multiply": "^4.9.0",
+    "immediate-error": "^7.1.0",
+    "integer-values": "^2.0.0",
+    "is-not-integer": "^1.0.2",
+    "logtoconsole": "^1.0.7"
+  }
+}

@@ -110,14 +110,20 @@
   "browser": "./misc/browser.js",
   "man": ".",
   "scripts": {
-    "testOnly": "nyc node test/test",
+    "testOnly": "node test/dist/test",
     "test": "npm run build && npm run testOnly",
     "lint": "eslint . --format=pretty && echo 'Lint passed succesfully'",
     "buildOnly": "webpack",
-    "build": "npm run clean && npm run buildOnly && npm run copy-types",
+    "buildLolite": "npm run cleanDist && npm run buildOnly && npm run copy-types",
+    "buildPackages": "npm run cleanPackages && node scripts/distribute",
+    "buildTests": "npm run cleanTestDist && node scripts/generateTests",
+    "build": "npm run buildLolite && npm run buildPackages && npm run buildTests",
     "copy-types": "node build/copy src/lolite.d.ts dist/lolite.d.ts",
-    "clean": "rimraf ./dist",
-    "prepublishOnly": "npm run build"
+    "cleanDist": "rimraf ./dist",
+    "cleanPackages": "rimraf ./packages",
+    "cleanTestDist": "rimraf ./test/dist",
+    "prepublishOnly": "npm run release",
+    "release": "npm run build && node scripts/publish"
   },
   "dependencies": {
     "@10xly/strict-equals": "^1.0.0",
@@ -222,26 +228,11 @@
     "exit": "^0.1.2",
     "globals": "^17.0.0",
     "graceful-fs": "^4.2.11",
-    "nyc": "^17.1.0",
     "prettier-linter-helpers": "^1.0.1",
     "rimraf": "^6.1.2",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1",
     "webpack-node-externals": "^3.0.0"
-  },
-  "peerDependencies": {
-    "boolbase": "*"
-  },
-  "peerDependenciesMeta": {
-    "boolbase": {
-      "optional": true
-    }
-  },
-  "bundleDependencies": [
-    "chayasan14-frame-print"
-  ],
-  "optionalDependencies": {
-    "pkg-with-failing-postinstall": "^1.0.0"
   },
   "publishConfig": {
     "tag": "latest",

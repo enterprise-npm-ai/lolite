@@ -4,3 +4,4 @@ t.js
 .nyc_output
 t.txt
 test.json
+**/node_modules
