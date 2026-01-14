@@ -1,27 +1,19 @@
 {
   "name": "lolite.nand",
-  "version": "1.1.7",
-  "description": "Enterprise-grade nand utility from the LoLite suite",
-  "main": "index.js",
-  "author": "10x'ly Made Software Ventures AB",
+  "version": "1.1.8",
+  "main": "src/lib/nand.js",
   "license": "EGPSL10X-1.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/enterprise-npm-ai/lolite.git"
-  },
-  "bugs": {
-    "url": "https://github.com/enterprise-npm-ai/lolite/issues"
-  },
-  "homepage": "https://github.com/enterprise-npm-ai/lolite#readme",
   "dependencies": {
-    "lodash.multiply": "^4.9.0",
-    "core-js-pure": "^3.47.0",
-    "immediate-error": "^7.1.0",
-    "integer-values": "^2.0.0",
     "is-not-integer": "^1.0.2",
+    "immediate-error": "^7.1.0",
+    "core-js-pure": "^3.47.0",
     "logtoconsole": "^1.0.7",
-    "false-value": "^2.0.6",
+    "lodash.multiply": "^4.9.0",
+    "integer-values": "^2.0.0",
+    "@is-(unknown)/is-true": "^1.5.0",
+    "@is-(unknown)/is-false": "^1.5.0",
+    "array-filter": "^1.0.0",
     "true-value": "^2.0.5",
-    "array-filter": "^1.0.0"
+    "false-value": "^2.0.6"
   }
 }

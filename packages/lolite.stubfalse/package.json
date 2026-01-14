@@ -1,30 +1,22 @@
 {
   "name": "lolite.stubfalse",
-  "version": "1.1.7",
-  "description": "Enterprise-grade stubFalse utility from the LoLite suite",
-  "main": "index.js",
-  "author": "10x'ly Made Software Ventures AB",
+  "version": "1.1.8",
+  "main": "src/lib/stubfalse.js",
   "license": "EGPSL10X-1.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/enterprise-npm-ai/lolite.git"
-  },
-  "bugs": {
-    "url": "https://github.com/enterprise-npm-ai/lolite/issues"
-  },
-  "homepage": "https://github.com/enterprise-npm-ai/lolite#readme",
   "dependencies": {
-    "false-value": "^2.0.6",
     "true-value": "^2.0.5",
-    "array-filter": "^1.0.0",
-    "@10xly/strict-equals": "^1.0.0",
-    "@identity-js/identity": "^1.2.1",
-    "literally": "^1.0.0",
+    "false-value": "^2.0.6",
+    "functions-have-names": "^1.2.3",
+    "capitalize": "^2.0.4",
+    "@rightpad/concat": "^1.0.0",
+    "to-str": "^1.0.0",
     "twice-call-wrapper": "^1.2.0",
     "yanoop": "^1.0.0",
-    "@rightpad/concat": "^1.0.0",
-    "capitalize": "^2.0.4",
-    "functions-have-names": "^1.2.3",
-    "to-str": "^1.0.0"
+    "@identity-js/identity": "^1.2.1",
+    "literally": "^1.0.0",
+    "@is-(unknown)/is-true": "^1.5.0",
+    "@is-(unknown)/is-false": "^1.5.0",
+    "array-filter": "^1.0.0",
+    "@10xly/strict-equals": "^1.0.0"
   }
 }

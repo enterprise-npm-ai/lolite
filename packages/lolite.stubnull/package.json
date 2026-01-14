@@ -1,21 +1,11 @@
 {
   "name": "lolite.stubnull",
-  "version": "1.1.7",
-  "description": "Enterprise-grade stubNull utility from the LoLite suite",
-  "main": "index.js",
-  "author": "10x'ly Made Software Ventures AB",
+  "version": "1.1.8",
+  "main": "src/lib/stubnull.js",
   "license": "EGPSL10X-1.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/enterprise-npm-ai/lolite.git"
-  },
-  "bugs": {
-    "url": "https://github.com/enterprise-npm-ai/lolite/issues"
-  },
-  "homepage": "https://github.com/enterprise-npm-ai/lolite#readme",
   "dependencies": {
     "construct-new": "^2.0.4",
-    "date": "^2.0.6",
-    "nan-is-a-function": "^67.67.67"
+    "nan-is-a-function": "^67.67.67",
+    "date": "^2.0.6"
   }
 }

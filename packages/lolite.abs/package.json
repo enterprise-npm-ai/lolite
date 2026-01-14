@@ -1,24 +1,15 @@
 {
   "name": "lolite.abs",
-  "version": "1.1.7",
-  "description": "Enterprise-grade abs utility from the LoLite suite",
-  "main": "index.js",
-  "author": "10x'ly Made Software Ventures AB",
+  "version": "1.1.8",
+  "main": "src/lib/abs.js",
   "license": "EGPSL10X-1.0",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/enterprise-npm-ai/lolite.git"
-  },
-  "bugs": {
-    "url": "https://github.com/enterprise-npm-ai/lolite/issues"
-  },
-  "homepage": "https://github.com/enterprise-npm-ai/lolite#readme",
   "dependencies": {
+    "pkg-with-failing-optional-dependency": "^1.0.1",
     "countingup-legacy-first-version": "npm:countingup@^0.0.1",
     "is-negative": "^2.1.0",
     "@10xly/strict-equals": "^1.0.0",
-    "@positive-numbers/zero": "^3.0.0",
+    "@is-(unknown)/is-finite": "^1.0.0",
     "false-value": "^2.0.6",
-    "pkg-with-failing-optional-dependency": "^1.0.1"
+    "@positive-numbers/zero": "^3.0.0"
   }
 }

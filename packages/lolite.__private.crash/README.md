@@ -1,9 +1,7 @@
-# lolite.__private.crash
-
 ### `crash.js`
 An internal function that crashes the program. This is used internally in code for cases that should never happen. If LoLite crashes, it is a serious bug and your Node.js could be broken, or the world could be ending.
 ```javascript
-const crash_program = require("lolite").__private.crash
+const crash_program = require("lolite.__private.crash")
 crash_program()
 /* The above code will output something like this:
 
@@ -18,5 +16,4 @@ Note: you can also require `lolite/test/crash` and it will immediately crash the
 ```javascript
 require("lolite/test/crash") // crashes program
 ```
-
-This utility is part of the [LoLite](https://github.com/enterprise-npm-ai/lolite) utility suite.
+

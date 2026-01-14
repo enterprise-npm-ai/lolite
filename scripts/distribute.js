@@ -1,126 +1,241 @@
-const fs = require("fs")
-const path = require("path")
+#!/usr/bin/env node
 
-const ROOT = process.cwd()
-const SRC = path.join(ROOT, "src")
-const PACKAGES_DIR = path.join(ROOT, "packages")
-const MAIN_PKG = require(path.join(ROOT, "package.json"))
-const MAIN_README = fs.readFileSync(path.join(ROOT, "README.md"), "utf8")
+const fs = require("fs");
+const path = require("path");
 
-const BLACKLIST = ["index.js", "lolite.js"]
-
-const getDocsForMethod = (methodName, pkgName) => {
-  const regex = new RegExp(`###\\s+\`?(?:lolite\\.)?${methodName}(?:\\(.*?\\))?(?:\\.js)?\`?[\\s\\S]*?(?=###|##|---|\$)`, "i")
-  const match = MAIN_README.match(regex)
-  if (!match) return `### ${methodName}\nThis utility is part of the [LoLite](https://github.com/enterprise-npm-ai/lolite) utility suite.`
-  
-  let docs = match[0].trim()
-  
-  // Truncate at EXTENDED DOCUMENTATION to prevent leaking internal docs into atomic readmes
-  if (docs.includes("# EXTENDED DOCUMENTATION")) {
-    docs = docs.split("# EXTENDED DOCUMENTATION")[0].trim()
-  }
-  
-  const monolithRequireRegex = /const\s+lolite\s+=\s+require\("lolite"\)/g
-  docs = docs.replace(monolithRequireRegex, `const ${methodName} = require("${pkgName}")`)
-  docs = docs.replace(new RegExp(`lolite\\.${methodName}(?!")`, "g"), methodName)
-  
-  return docs
+const FORCED_DEPENDENCIES = {
+  "lolite.__private.date": ["date"]
 }
 
-const getAllFiles = (dirPath, arrayOfFiles) => {
-  const files = fs.readdirSync(dirPath)
-  arrayOfFiles = arrayOfFiles || []
-  files.forEach((file) => {
-    const fullPath = path.join(dirPath, file)
-    if (fs.statSync(fullPath).isDirectory()) {
-      arrayOfFiles = getAllFiles(fullPath, arrayOfFiles)
-    } else if (file.endsWith(".js") && !BLACKLIST.includes(file)) {
-      arrayOfFiles.push(fullPath)
-    }
-  })
-  return arrayOfFiles
+/* -------------------------------------------------- */
+/* Logging helpers                                     */
+/* -------------------------------------------------- */
+
+const log = (msg) => console.log(`🔍 ${msg}`);
+const step = (msg) => console.log(`📦 ${msg}`);
+const done = (msg) => console.log(`✅ ${msg}`);
+
+/* -------------------------------------------------- */
+/* Paths & inputs                                      */
+/* -------------------------------------------------- */
+
+const ROOT = path.resolve(__dirname, "..");
+const SRC = path.join(ROOT, "src");
+const LIB = path.join(SRC, "lib");
+const PRIVATE = path.join(SRC, "private");
+const DIST = path.join(ROOT, "packages");
+
+const parentPkg = require(path.join(ROOT, "package.json"));
+const parentReadme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8");
+
+if (!fs.existsSync(DIST)) {
+  log("Creating packages directory.  ");
+  fs.mkdirSync(DIST);
 }
 
-if (fs.existsSync(PACKAGES_DIR)) fs.rmSync(PACKAGES_DIR, { recursive: true, force: true })
-fs.mkdirSync(PACKAGES_DIR)
+/* -------------------------------------------------- */
+/* Utilities                                           */
+/* -------------------------------------------------- */
 
-const allSrcFiles = getAllFiles(SRC)
+const toLower = (s) => s.toLowerCase();
 
-allSrcFiles.forEach((fullPath) => {
-  const fileName = path.basename(fullPath, ".js")
-  const isPrivate = fullPath.includes(path.sep + "private" + path.sep)
-  const pkgName = isPrivate ? `lolite.__private.${fileName.toLowerCase()}` : `lolite.${fileName.toLowerCase()}`
-  const pkgDir = path.join(PACKAGES_DIR, pkgName)
+function getJsFiles(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir).filter((f) => f.endsWith(".js"));
+}
 
-  if (!fs.existsSync(pkgDir)) fs.mkdirSync(pkgDir, { recursive: true })
-
-  const pkgJson = {
-    name: pkgName,
-    version: MAIN_PKG.version,
-    description: `Enterprise-grade ${fileName} utility from the LoLite suite`,
-    main: "index.js",
-    author: MAIN_PKG.author,
-    license: MAIN_PKG.license,
-    repository: MAIN_PKG.repository,
-    bugs: MAIN_PKG.bugs,
-    homepage: MAIN_PKG.homepage,
-    dependencies: {}
+function parseRequires(code) {
+  const regex = /require\(["']([^"']+)["']\)/g;
+  const out = [];
+  let match;
+  while ((match = regex.exec(code))) {
+    out.push(match[1]);
   }
+  return out;
+}
 
-  const processFile = (sourcePath, destFileName) => {
-    let fileContent = fs.readFileSync(sourcePath, "utf8")
-    // Target both relative and absolute-looking local requires
-    const requireRegex = /require\("(\.\.?\/.*)"\)/g
-    let match
+function getExternalPackage(dep) {
+  if (dep.startsWith("@")) {
+    return dep.split("/").slice(0, 2).join("/");
+  }
+  return dep.split("/")[0];
+}
 
-    while ((match = requireRegex.exec(fileContent)) !== null) {
-      const originalImport = match[0]
-      const relativeImportPath = match[1]
-      let absolutePath = path.resolve(path.dirname(sourcePath), relativeImportPath)
-      
-      // Node.js Resolution Logic: Check .js, then /index.js
-      if (!absolutePath.endsWith(".js") && !fs.existsSync(absolutePath + ".js")) {
-        const indexPath = path.join(absolutePath, "index.js")
-        if (fs.existsSync(indexPath)) {
-          absolutePath = indexPath
-        }
-      } else if (fs.existsSync(absolutePath + ".js")) {
-        absolutePath += ".js"
+/* -------------------------------------------------- */
+/* Dependency collection                               */
+/* -------------------------------------------------- */
+
+function collectDeps(entryFile, seenFiles = new Set(), externalDeps = new Set()) {
+  if (seenFiles.has(entryFile)) return { seenFiles, externalDeps };
+  seenFiles.add(entryFile);
+
+  log(`Scanning ${path.relative(ROOT, entryFile)}.  `);
+
+  const code = fs.readFileSync(entryFile, "utf8");
+  const requires = parseRequires(code);
+
+  for (const req of requires) {
+    if (req.startsWith("./") || req.startsWith("../")) {
+      const resolved =
+        fs.existsSync(req)
+          ? req
+          : path.resolve(path.dirname(entryFile), req);
+
+      const file =
+        fs.existsSync(resolved) ? resolved :
+        fs.existsSync(`${resolved}.js`) ? `${resolved}.js` :
+        null;
+
+      if (file) {
+        collectDeps(file, seenFiles, externalDeps);
       }
-
-      if (fs.existsSync(absolutePath) && absolutePath.endsWith(".js")) {
-        const depName = path.basename(absolutePath, ".js")
-        const newLocalName = depName + ".js"
-        const destPath = path.join(pkgDir, newLocalName)
-        
-        if (!fs.existsSync(destPath)) {
-          fs.copyFileSync(absolutePath, destPath)
-          processFile(absolutePath, newLocalName)
-        }
-        fileContent = fileContent.replace(originalImport, `require("./${depName}")`)
-      }
+    } else {
+      const pkg = getExternalPackage(req);
+      externalDeps.add(pkg);
+      log(`Found external dependency: ${pkg}.  `);
     }
-
-    // Improved dependency detection for packages like 'date' or '@is-(unknown)/...'
-    Object.keys(MAIN_PKG.dependencies).forEach((dep) => {
-      // Matches require("dep") or require("dep/path")
-      const depRegex = new RegExp(`require\\("${dep}(?:\/.*)?"\\)`)
-      if (depRegex.test(fileContent)) {
-        pkgJson.dependencies[dep] = MAIN_PKG.dependencies[dep]
-      }
-    })
-
-    fs.writeFileSync(path.join(pkgDir, destFileName), fileContent)
   }
 
-  processFile(fullPath, "index.js")
+  return { seenFiles, externalDeps };
+}
 
-  if (Object.keys(pkgJson.dependencies).length === 0) delete pkgJson.dependencies
-  fs.writeFileSync(path.join(pkgDir, "package.json"), JSON.stringify(pkgJson, null, 2))
-  
-  const finalReadme = `# ${pkgName}\n\n${getDocsForMethod(fileName, pkgName)}\n\nThis utility is part of the [LoLite](https://github.com/enterprise-npm-ai/lolite) utility suite.`
-  fs.writeFileSync(path.join(pkgDir, "README.md"), finalReadme)
-})
+/* -------------------------------------------------- */
+/* README rewriting                                    */
+/* -------------------------------------------------- */
 
-console.log("Atomic packages generated with smart dependency detection and clean READMEs.")
+function rewritePublicExamples(text, name) {
+  return text
+    .replace(/require\(["']lolite["']\)/g, `require("lolite.${name}")`)
+    .replace(new RegExp(`lolite\\.${name}\\(`, "g"), `${name}(`);
+}
+
+function rewritePrivateExamples(text, name) {
+  return text.replace(
+    /require\(["']lolite["']\)\.__private\.[A-Za-z0-9_]+/g,
+    `require("lolite.__private.${name}")`
+  );
+}
+
+function extractPublicReadme(name) {
+  const regex = new RegExp(
+    `##\\s+${name}\\([^)]*\\)[\\s\\S]*?(?=\\n##\\s+|\\n---|$)`,
+    "i"
+  );
+
+  const match = parentReadme.match(regex);
+  if (!match) {
+    return `## ${name}\n\nNo documentation available.\n`;
+  }
+
+  return rewritePublicExamples(match[0], name);
+}
+
+function extractPrivateReadme(name) {
+  const fileName = `${name}.js`;
+
+  const regex = new RegExp(
+    `###\\s+\`${fileName}\`[\\s\\S]*?(?=\\n###\\s+|$)`,
+    "i"
+  );
+
+  const match = parentReadme.match(regex);
+  if (!match) {
+    return `## ${name}\n\nNo documentation available.\n`;
+  }
+
+  return rewritePrivateExamples(match[0], name);
+}
+
+/* -------------------------------------------------- */
+/* Package builder                                     */
+/* -------------------------------------------------- */
+
+function buildPackage(name, entryFile, type) {
+  const cleanName = toLower(name.replace("__private.", ""));
+  const pkgName =
+    type === "private"
+      ? `lolite.__private.${cleanName}`
+      : `lolite.${cleanName}`;
+
+  const pkgDir = path.join(DIST, pkgName);
+  const srcDir = path.join(pkgDir, "src");
+
+  step(`Building ${pkgName}.  `);
+
+  fs.mkdirSync(srcDir, { recursive: true });
+
+  const { seenFiles, externalDeps } = collectDeps(entryFile);
+
+  log(`Bundling ${seenFiles.size} internal file(s).  `);
+  for (const file of seenFiles) {
+    const rel = path.relative(SRC, file);
+    const dest = path.join(srcDir, rel);
+    fs.mkdirSync(path.dirname(dest), { recursive: true });
+    fs.copyFileSync(file, dest);
+  }
+
+  const dependencies = {};
+for (const dep of externalDeps) {
+  if (parentPkg.dependencies?.[dep]) {
+    dependencies[dep] = parentPkg.dependencies[dep];
+  }
+}
+
+const forced = FORCED_DEPENDENCIES[pkgName];
+if (forced) {
+  log(`Applying forced dependencies: ${forced.join(", ")}.  `);
+  for (const dep of forced) {
+    if (parentPkg.dependencies?.[dep]) {
+      dependencies[dep] = parentPkg.dependencies[dep];
+    }
+  }
+}
+
+
+  const main =
+    type === "private"
+      ? `src/private/${cleanName}.js`
+      : `src/lib/${cleanName}.js`;
+
+  fs.writeFileSync(
+    path.join(pkgDir, "package.json"),
+    JSON.stringify(
+      {
+        name: pkgName,
+        version: parentPkg.version,
+        main,
+        license: parentPkg.license,
+        dependencies,
+      },
+      null,
+      2
+    )
+  );
+
+  const readme =
+    type === "private"
+      ? extractPrivateReadme(cleanName)
+      : extractPublicReadme(cleanName);
+
+  fs.writeFileSync(path.join(pkgDir, "README.md"), readme);
+
+  done(`${pkgName} complete.  `);
+}
+
+/* -------------------------------------------------- */
+/* Execution                                           */
+/* -------------------------------------------------- */
+
+log("Processing public utilities.  ");
+for (const file of getJsFiles(LIB)) {
+  const name = path.basename(file, ".js");
+  buildPackage(name, path.join(LIB, file), "lib");
+}
+
+log("Processing private utilities.  ");
+for (const file of getJsFiles(PRIVATE)) {
+  const name = path.basename(file, ".js");
+  buildPackage(`__private.${name}`, path.join(PRIVATE, file), "private");
+}
+
+done("All LoLite packages generated successfully.  🎉");
