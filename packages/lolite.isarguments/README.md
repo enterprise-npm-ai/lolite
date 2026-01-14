@@ -22,4 +22,6 @@ assert.ok(!lolite.isArguments(null))                      // null is not argumen
 assert.ok(!lolite.isArguments(undefined))                 // undefined is not arguments
 assert.ok(!lolite.isArguments(() => {}))                  // functions are not arguments
 ```
+
+## SIMPLE FUNCTION UTILITIES
 

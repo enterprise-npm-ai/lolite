@@ -11,4 +11,8 @@ const single = tail([1])
 const undef = tail(null)
 // result: undefined
 ```
+
+---
+
+## MATH UTILITIES
 

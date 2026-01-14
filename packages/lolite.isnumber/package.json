@@ -1,8 +1,13 @@
 {
   "name": "lolite.isnumber",
-  "version": "1.1.8",
+  "version": "1.1.10",
   "main": "src/lib/isnumber.js",
   "license": "EGPSL10X-1.0",
+  "author": "10x'ly Made Software Ventures AB",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enterprise-npm-ai/lolite.git"
+  },
   "dependencies": {
     "array-includes": "^3.1.9",
     "object.values": "^1.2.1",

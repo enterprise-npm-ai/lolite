@@ -1,8 +1,13 @@
 {
   "name": "lolite.__private.arrayofallbooleans",
-  "version": "1.1.8",
+  "version": "1.1.10",
   "main": "src/private/arrayofallbooleans.js",
   "license": "EGPSL10X-1.0",
+  "author": "10x'ly Made Software Ventures AB",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enterprise-npm-ai/lolite.git"
+  },
   "dependencies": {
     "true-value": "^2.0.5",
     "false-value": "^2.0.6"

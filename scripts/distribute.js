@@ -5,20 +5,18 @@ const path = require("path");
 
 const FORCED_DEPENDENCIES = {
   "lolite.__private.date": ["date"]
-}
+};
 
 /* -------------------------------------------------- */
 /* Logging helpers                                     */
 /* -------------------------------------------------- */
-
 const log = (msg) => console.log(`🔍 ${msg}`);
 const step = (msg) => console.log(`📦 ${msg}`);
 const done = (msg) => console.log(`✅ ${msg}`);
 
 /* -------------------------------------------------- */
-/* Paths & inputs                                      */
+/* Paths & inputs                                     */
 /* -------------------------------------------------- */
-
 const ROOT = path.resolve(__dirname, "..");
 const SRC = path.join(ROOT, "src");
 const LIB = path.join(SRC, "lib");
@@ -34,9 +32,8 @@ if (!fs.existsSync(DIST)) {
 }
 
 /* -------------------------------------------------- */
-/* Utilities                                           */
+/* Utilities                                          */
 /* -------------------------------------------------- */
-
 const toLower = (s) => s.toLowerCase();
 
 function getJsFiles(dir) {
@@ -64,7 +61,6 @@ function getExternalPackage(dep) {
 /* -------------------------------------------------- */
 /* Dependency collection                               */
 /* -------------------------------------------------- */
-
 function collectDeps(entryFile, seenFiles = new Set(), externalDeps = new Set()) {
   if (seenFiles.has(entryFile)) return { seenFiles, externalDeps };
   seenFiles.add(entryFile);
@@ -100,9 +96,8 @@ function collectDeps(entryFile, seenFiles = new Set(), externalDeps = new Set())
 }
 
 /* -------------------------------------------------- */
-/* README rewriting                                    */
+/* README rewriting                                   */
 /* -------------------------------------------------- */
-
 function rewritePublicExamples(text, name) {
   return text
     .replace(/require\(["']lolite["']\)/g, `require("lolite.${name}")`)
@@ -118,7 +113,7 @@ function rewritePrivateExamples(text, name) {
 
 function extractPublicReadme(name) {
   const regex = new RegExp(
-    `##\\s+${name}\\([^)]*\\)[\\s\\S]*?(?=\\n##\\s+|\\n---|$)`,
+    `##\\s+${name}\\([^)]*\\)[\\s\\S]*?(?=\\n###|$)`,
     "i"
   );
 
@@ -132,9 +127,8 @@ function extractPublicReadme(name) {
 
 function extractPrivateReadme(name) {
   const fileName = `${name}.js`;
-
   const regex = new RegExp(
-    `###\\s+\`${fileName}\`[\\s\\S]*?(?=\\n###\\s+|$)`,
+    `###\\s+\`${fileName}\`[\\s\\S]*?(?=\\n###|$)`,
     "i"
   );
 
@@ -147,9 +141,8 @@ function extractPrivateReadme(name) {
 }
 
 /* -------------------------------------------------- */
-/* Package builder                                     */
+/* Package builder                                    */
 /* -------------------------------------------------- */
-
 function buildPackage(name, entryFile, type) {
   const cleanName = toLower(name.replace("__private.", ""));
   const pkgName =
@@ -175,42 +168,38 @@ function buildPackage(name, entryFile, type) {
   }
 
   const dependencies = {};
-for (const dep of externalDeps) {
-  if (parentPkg.dependencies?.[dep]) {
-    dependencies[dep] = parentPkg.dependencies[dep];
-  }
-}
-
-const forced = FORCED_DEPENDENCIES[pkgName];
-if (forced) {
-  log(`Applying forced dependencies: ${forced.join(", ")}.  `);
-  for (const dep of forced) {
+  for (const dep of externalDeps) {
     if (parentPkg.dependencies?.[dep]) {
       dependencies[dep] = parentPkg.dependencies[dep];
     }
   }
-}
 
+  const forced = FORCED_DEPENDENCIES[pkgName];
+  if (forced) {
+    log(`Applying forced dependencies: ${forced.join(", ")}.  `);
+    for (const dep of forced) {
+      if (parentPkg.dependencies?.[dep]) {
+        dependencies[dep] = parentPkg.dependencies[dep];
+      }
+    }
+  }
 
   const main =
     type === "private"
       ? `src/private/${cleanName}.js`
       : `src/lib/${cleanName}.js`;
 
-  fs.writeFileSync(
-    path.join(pkgDir, "package.json"),
-    JSON.stringify(
-      {
-        name: pkgName,
-        version: parentPkg.version,
-        main,
-        license: parentPkg.license,
-        dependencies,
-      },
-      null,
-      2
-    )
-  );
+  const pkgJson = {
+    name: pkgName,
+    version: parentPkg.version,
+    main,
+    license: parentPkg.license,
+    author: parentPkg.author,
+    repository: parentPkg.repository,
+    dependencies
+  };
+
+  fs.writeFileSync(path.join(pkgDir, "package.json"), JSON.stringify(pkgJson, null, 2));
 
   const readme =
     type === "private"
@@ -225,7 +214,6 @@ if (forced) {
 /* -------------------------------------------------- */
 /* Execution                                           */
 /* -------------------------------------------------- */
-
 log("Processing public utilities.  ");
 for (const file of getJsFiles(LIB)) {
   const name = path.basename(file, ".js");
