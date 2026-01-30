@@ -1092,3 +1092,6 @@ console.log(multiply(2, 6)) // 12
 
 ### `__using_development__` in `isFunction`
 This internal feature is not a private function, it's a hidden argument in the `isFunction` function. The parameter is called `__using_development__`, and if it's on, it defines a getter on the value passed in for `Symbol.toStringTag`. The reason for this is that LoLite internally has a file that requires some other file that ends up requiring the first file. You might think this crashes the program, but it doesn't, because when you do infinite require loop like that Node.js cuts off the loop and makes it so when you require it it just returns an empty object. LoLite checks if the required file is not a function using `isFunction`, and if it is not a function, reassigns it to a fallback. However, the empty object that Node.js returns is actually an object but without any of the Object.prototype properties, so it doesn't have `Symbol.toStringTag` as a property. When it uses `isFunction`, it checks the toStringTag of the value to check if it's a function. This triggers a Node.js warning for accessing non-existent property `Symbol.toStringTag` on object. This is where the `__using_development__` parameter comes in. It stops this Node.js internal warning.
+
+# SUPER IMPORTANT CONTRIBUTING THING/NOTE FOR MYSELF
+RUN NPM PUBLISH BEFORE GIT COMMIT!!!!!!!!!!!!!!!!

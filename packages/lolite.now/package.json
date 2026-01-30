@@ -1,6 +1,6 @@
 {
   "name": "lolite.now",
-  "version": "1.1.17",
+  "version": "1.1.18",
   "main": "src/lib/now.js",
   "license": "EGPSL10X-1.0",
   "author": "10x'ly Made Software Ventures AB",
@@ -31,6 +31,7 @@
     "@10xly/strict-equals": "^1.0.0",
     "@extremejs/utils": "^1.0.0-beta.22",
     "@positive-numbers/zero": "^3.0.0",
+    "is-number-object": "1.1.1",
     "undefined-is-a-function": "^0.1.0",
     "es-logical-or-operator": "^1.0.0",
     "hasown": "^2.0.2",

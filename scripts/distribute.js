@@ -2,6 +2,8 @@
 
 const fs = require("fs")
 const path = require("path")
+const crypto = require("crypto")
+const { execSync } = require("child_process")
 
 const FORCED_DEPENDENCIES = {
   "lolite.__private.date": ["date"],
@@ -59,6 +61,57 @@ function getExternalPackage(dep) {
 }
 
 /* -------------------------------------------------- */
+/* Hashing & npm helpers                               */
+/* -------------------------------------------------- */
+function hashDir(dir) {
+  const hash = crypto.createHash("sha256")
+
+  function walk(p) {
+    for (const file of fs.readdirSync(p).sort()) {
+      if (file === "package.json") continue
+      if (file === "README.md") continue
+
+      const full = path.join(p, file)
+      const stat = fs.statSync(full)
+
+      if (stat.isDirectory()) {
+        walk(full)
+      } else {
+        hash.update(fs.readFileSync(full))
+      }
+    }
+  }
+
+  walk(dir)
+  return hash.digest("hex")
+}
+
+function getLatestNpmVersion(pkgName) {
+  try {
+    return execSync(`npm view ${pkgName} version`, {
+      stdio: ["ignore", "pipe", "ignore"],
+    })
+      .toString()
+      .trim()
+  } catch {
+    return null
+  }
+}
+
+function getPublishedHash(pkgName, version) {
+  try {
+    return execSync(
+      `npm view ${pkgName}@${version} dist.tarball`,
+      { stdio: ["ignore", "pipe", "ignore"] }
+    )
+      .toString()
+      .trim()
+  } catch {
+    return null
+  }
+}
+
+/* -------------------------------------------------- */
 /* Dependency collection                               */
 /* -------------------------------------------------- */
 function collectDeps(entryFile, seenFiles = new Set(), externalDeps = new Set()) {
@@ -72,9 +125,15 @@ function collectDeps(entryFile, seenFiles = new Set(), externalDeps = new Set())
 
   for (const req of requires) {
     if (req.startsWith("./") || req.startsWith("../")) {
-      const resolved = fs.existsSync(req) ? req : path.resolve(path.dirname(entryFile), req)
+      const resolved = fs.existsSync(req)
+        ? req
+        : path.resolve(path.dirname(entryFile), req)
 
-      const file = fs.existsSync(resolved) ? resolved : fs.existsSync(`${resolved}.js`) ? `${resolved}.js` : null
+      const file = fs.existsSync(resolved)
+        ? resolved
+        : fs.existsSync(`${resolved}.js`)
+        ? `${resolved}.js`
+        : null
 
       if (file) {
         collectDeps(file, seenFiles, externalDeps)
@@ -99,38 +158,49 @@ function rewritePublicExamples(text, name) {
 }
 
 function rewritePrivateExamples(text, name) {
-  return text.replace(/require\(["']lolite["']\)\.__private\.[A-Za-z0-9_]+/g, `require("lolite.__private.${name}")`)
+  return text.replace(
+    /require\(["']lolite["']\)\.__private\.[A-Za-z0-9_]+/g,
+    `require("lolite.__private.${name}")`
+  )
 }
 
 function extractPublicReadme(name) {
-  const regex = new RegExp(`##\\s+${name}\\([^)]*\\)[\\s\\S]*?(?=\\n###|$)`, "i")
+  const regex = new RegExp(
+    `##\\s+${name}\\([^)]*\\)[\\s\\S]*?(?=\\n###|$)`,
+    "i"
+  )
 
   const match = parentReadme.match(regex)
   if (!match) {
-    return `## ${name}\n\nSee the [LoLite Readme](https://github.com/enterprise-npm-ai/lolite?tab=readme-ov-file#documentation) for documentation on this utility.\n`
+    return `## ${name}\n\nSee the LoLite README for documentation.\n`
   }
 
   return rewritePublicExamples(match[0], name)
 }
 
 function extractPrivateReadme(name) {
-  const regex = new RegExp(`#{2,3}\\s+__private\\.${name}[\\s\\S]*?(?=\\n##|$)`, "i")
+  const regex = new RegExp(
+    `#{2,3}\\s+__private\\.${name}[\\s\\S]*?(?=\\n##|$)`,
+    "i"
+  )
 
   const match = parentReadme.match(regex)
   if (!match) {
-    return `## ${name}\n\nSee the [LoLite Readme](https://github.com/enterprise-npm-ai/lolite?tab=readme-ov-file#extended-documentation) for documentation on this utility.\n`
+    return `## ${name}\n\nSee the LoLite README for documentation.\n`
   }
 
   return rewritePrivateExamples(match[0], name)
 }
-
 
 /* -------------------------------------------------- */
 /* Package builder                                    */
 /* -------------------------------------------------- */
 function buildPackage(name, entryFile, type) {
   const cleanName = toLower(name.replace("__private.", ""))
-  const pkgName = type === "private" ? `lolite.__private.${cleanName}` : `lolite.${cleanName}`
+  const pkgName =
+    type === "private"
+      ? `lolite.__private.${cleanName}`
+      : `lolite.${cleanName}`
 
   const pkgDir = path.join(DIST, pkgName)
   const srcDir = path.join(pkgDir, "src")
@@ -141,7 +211,6 @@ function buildPackage(name, entryFile, type) {
 
   const { seenFiles, externalDeps } = collectDeps(entryFile)
 
-  log(`Bundling ${seenFiles.size} internal file(s).  `)
   for (const file of seenFiles) {
     const rel = path.relative(SRC, file)
     const dest = path.join(srcDir, rel)
@@ -158,7 +227,6 @@ function buildPackage(name, entryFile, type) {
 
   const forced = FORCED_DEPENDENCIES[pkgName]
   if (forced) {
-    log(`Applying forced dependencies: ${forced.join(", ")}.  `)
     for (const dep of forced) {
       if (parentPkg.dependencies?.[dep]) {
         dependencies[dep] = parentPkg.dependencies[dep]
@@ -166,11 +234,41 @@ function buildPackage(name, entryFile, type) {
     }
   }
 
-  const main = type === "private" ? `src/private/${cleanName}.js` : `src/lib/${cleanName}.js`
+  const main =
+    type === "private"
+      ? `src/private/${cleanName}.js`
+      : `src/lib/${cleanName}.js`
+
+  let version = parentPkg.version
+  const localHash = hashDir(pkgDir)
+  const npmVersion = getLatestNpmVersion(pkgName)
+
+  if (npmVersion) {
+    log(`Checking published version ${npmVersion}.  `)
+    try {
+      const tmp = fs.mkdtempSync(path.join(require("os").tmpdir(), "lolite-"))
+      execSync(`npm pack ${pkgName}@${npmVersion}`, {
+        cwd: tmp,
+        stdio: "ignore",
+      })
+
+      const tgz = fs.readdirSync(tmp).find((f) => f.endsWith(".tgz"))
+      execSync(`tar -xzf ${tgz}`, { cwd: tmp, stdio: "ignore" })
+
+      const publishedHash = hashDir(path.join(tmp, "package"))
+
+      if (publishedHash === localHash) {
+        version = npmVersion
+        log(`No content changes detected.  Reusing ${npmVersion}.  `)
+      }
+    } catch {
+      log("Unable to compare with npm package.  Publishing normally.  ")
+    }
+  }
 
   const pkgJson = {
     name: pkgName,
-    version: parentPkg.version,
+    version,
     main,
     license: parentPkg.license,
     author: parentPkg.author,
@@ -178,13 +276,19 @@ function buildPackage(name, entryFile, type) {
     dependencies,
   }
 
-  fs.writeFileSync(path.join(pkgDir, "package.json"), JSON.stringify(pkgJson, null, 2))
+  fs.writeFileSync(
+    path.join(pkgDir, "package.json"),
+    JSON.stringify(pkgJson, null, 2)
+  )
 
-  const readme = type === "private" ? extractPrivateReadme("__private." + cleanName) : extractPublicReadme(cleanName)
+  const readme =
+    type === "private"
+      ? extractPrivateReadme("__private." + cleanName)
+      : extractPublicReadme(cleanName)
 
   fs.writeFileSync(path.join(pkgDir, "README.md"), readme)
 
-  done(`${pkgName} complete.  `)
+  done(`${pkgName} ready (${version}).  `)
 }
 
 /* -------------------------------------------------- */

@@ -1,6 +1,6 @@
 {
   "name": "lolite.isplainobject",
-  "version": "1.1.17",
+  "version": "1.1.18",
   "main": "src/lib/isplainobject.js",
   "license": "EGPSL10X-1.0",
   "author": "10x'ly Made Software Ventures AB",
@@ -27,6 +27,7 @@
     "@10xly/strict-equals": "^1.0.0",
     "@extremejs/utils": "^1.0.0-beta.22",
     "@positive-numbers/zero": "^3.0.0",
+    "is-number-object": "1.1.1",
     "hasown": "^2.0.2",
     "has-symbol-support-x": "^1.4.2",
     "has-tostringtag": "^1.0.2",

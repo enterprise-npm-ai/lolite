@@ -1023,10 +1023,12 @@ const equal = __webpack_require__(/*! @10xly/strict-equals */ "@10xly/strict-equ
 const { TYPE } = __webpack_require__(/*! @extremejs/utils */ "@extremejs/utils")
 const zero = __webpack_require__(/*! @positive-numbers/zero */ "@positive-numbers/zero")
 const falseValue = __webpack_require__(/*! false-value */ "false-value")
+const not = __webpack_require__(/*! ./not */ "./src/lib/not.js")
+const isNumberObj = __webpack_require__(/*! is-number-object */ "is-number-object")
 
 function isNull(value) {
   try {
-    return and(equal(typeOf(value), TYPE.OBJECT), equal($Number(value), zero))
+    return and(equal(typeOf(value), TYPE.OBJECT), and(not(isNumberObj(value)), equal($Number(value), zero)))
   } catch {
     return falseValue()
   }
@@ -3385,6 +3387,17 @@ module.exports = require("is-not-negative");
 
 "use strict";
 module.exports = require("is-not-positive");
+
+/***/ },
+
+/***/ "is-number-object"
+/*!***********************************!*\
+  !*** external "is-number-object" ***!
+  \***********************************/
+(module) {
+
+"use strict";
+module.exports = require("is-number-object");
 
 /***/ },
 
