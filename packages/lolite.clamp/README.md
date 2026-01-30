@@ -17,8 +17,4 @@ const raised = clamp(-5, 1, 10)
 const coercedClamp = clamp(Infinity, "garbage", NaN)
 // result: 0 (0 clamped between 0 and 0)
 ```
-
----
-
-## LOGIC GATES
 

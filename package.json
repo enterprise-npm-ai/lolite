@@ -1,7 +1,7 @@
 {
   "name": "lolite",
   "private": false,
-  "version": "1.1.16",
+  "version": "1.1.17",
   "description": "The 10x Utility Library",
   "keywords": [
     "lolite",
@@ -48,7 +48,7 @@
     "litloe",
     "enterprise-npm",
     "ai",
-    "enterprise-npm-ai",
+    "10xly",
     "10x'ly Made",
     "10xEngineersQualityProgramming",
     "is-unknown",
@@ -56,13 +56,13 @@
     "js-constant",
     "is-not-ten-thousand"
   ],
-  "homepage": "https://github.com/enterprise-npm-ai/lolite#readme",
+  "homepage": "https://github.com/10xly/lolite#readme",
   "bugs": {
-    "url": "https://github.com/enterprise-npm-ai/lolite/issues"
+    "url": "https://github.com/10xly/lolite/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/enterprise-npm-ai/lolite.git"
+    "url": "git+https://github.com/10xly/lolite.git"
   },
   "license": "EGPSL10X-1.0",
   "author": "10x'ly Made Software Ventures AB",
@@ -74,11 +74,11 @@
     "ChatGPT"
   ],
   "maintainers": [
-    "10x'ly Made enterprise-npm-ai Team (just tj-commits)"
+    "10x'ly Made Team (just tj-commits)"
   ],
   "funding": {
     "type": "Please star our repository",
-    "url": "https://github.com/enterprise-npm-ai/lolite"
+    "url": "https://github.com/10xly/lolite"
   },
   "engines": {
     "node": ">=0.0.1",
@@ -127,6 +127,7 @@
     "release": "npm run build && node scripts/publish"
   },
   "dependencies": {
+    "@10xly/global": "^1.0.0",
     "@10xly/is-instance-of": "^1.0.0",
     "@10xly/strict-equals": "^1.0.0",
     "@extra-array/length": "^2.10.19",
@@ -139,6 +140,8 @@
     "@is-(unknown)/is-true": "^1.5.0",
     "@not-js/not": "^1.1.0",
     "@positive-numbers/one": "^3.0.0",
+    "@positive-numbers/one-hundred": "^5.0.0",
+    "@positive-numbers/ten": "^3.0.0",
     "@positive-numbers/zero": "^3.0.0",
     "@rightpad/concat": "^1.0.0",
     "@stdlib/assert-is-string": "^0.2.2",
@@ -147,19 +150,23 @@
     "array-includes": "^3.1.9",
     "array-sample": "^0.1.0",
     "array-slice": "^1.1.0",
+    "array.from": "^1.1.6",
     "array.prototype.at": "^1.1.3",
     "array.prototype.filter": "^1.0.4",
+    "array.prototype.map": "^1.0.8",
     "attempt-statement": "^1.2.1",
     "bogosort": "^1.0.1",
     "capitalize": "^2.0.4",
     "const": "^1.0.0",
     "construct-new": "^2.0.4",
+    "construct-new-second": "^1.0.0",
     "countingup": "^0.3.0",
     "countingup-legacy-first-version": "npm:countingup@^0.0.1",
     "date": "^2.0.6",
     "empty-string": "^1.1.1",
     "es-intrinsic-cache": "^1.0.1",
     "es-logical-not-operator": "^1.0.0",
+    "es-logical-nullish-coalescing-operator": "^1.0.0",
     "es-logical-or-operator": "^1.0.0",
     "es-object-atoms": "^1.1.1",
     "es-typeof": "^1.0.0",
@@ -167,6 +174,7 @@
     "false-value": "^2.0.6",
     "fizzbuzz-enterprise": "^1.0.0",
     "for-each": "^0.3.5",
+    "function.prototype.exec": "^1.0.0",
     "functions-have-names": "^1.2.3",
     "get-intrinsic": "^1.3.1",
     "has-bigints": "^1.1.0",
@@ -197,6 +205,7 @@
     "map-values": "^1.0.1",
     "math-intrinsics": "^1.1.0",
     "max-safe-integer": "^1.0.1",
+    "name-of-function": "^1.0.0",
     "nan-is-a-function": "^67.67.67",
     "not-not": "^1.0.2",
     "object.values": "^1.2.1",

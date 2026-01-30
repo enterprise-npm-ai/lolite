@@ -188,7 +188,28 @@ console.log(typeof lolite.sample([1, 2, 3])) // "number"
 console.log(typeof lolite.sample(["h", "g", "r"])) // "string"
 ```
 
+### times(number, iteratee)
+Invokes the `iteratee` `number` times, returning an array of the results of each invocation. The iteratee is invoked with one argument: `index`.
+
+If `iteratee` is nullish, it defaults to `lolite.identity`.
+```js
+const lolite = require("lolite")
+
+const result = lolite.times(3)
+// result: [0, 1, 2]
+
+const doubled = lolite.times(4, (i) => lolite.multiply(i, 2))
+// doubled: [0, 2, 4, 6]
+
+const empty = lolite.times("not a number")
+// empty: []
+
+const trueStory = lolite.times(2, lolite.stubTrue) // lolite.stubTrue is a function that returns true
+// trueStory: [true, true]
+```
+
 ---
+###
 
 ## MATH UTILITIES
 
@@ -451,6 +472,7 @@ const coercedClamp = lolite.clamp(Infinity, "garbage", NaN)
 // result: 0 (0 clamped between 0 and 0)
 ```
 
+###
 ---
 
 ## LOGIC GATES
@@ -557,6 +579,7 @@ console.log(lolite.xnor(testTruthyValue, testTruthyValue)) // true
 console.log(lolite.xnor(testFalsyValue, testFalsyValue)) // true
 ```
 
+###
 ---
 
 ## VALIDATION UTILITIES
@@ -985,6 +1008,23 @@ Returns the primitive value null.
 const lolite = require("lolite")
 console.log(lolite.stubNull()) // null
 ```
+
+###
+---
+
+## DATE UTILITIES
+
+### now()
+Gets the timestamp of the number of milliseconds that have elapsed since the Unix epoch (1 January 1970 00:00:00 UTC).
+
+```js
+const lolite = require("lolite")
+
+console.log(lolite.now() === Date.now()) // true
+```
+
+###
+---
 
 # EXTENDED DOCUMENTATION
 LoLite contains some private utilities in its code that it uses internally. These are exported under the `__private` key in the default export. You probably don't want to use these, unless you have a really good reason to.

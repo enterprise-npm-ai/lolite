@@ -15,8 +15,4 @@ console.log(xnor(false, false)) // true
 console.log(xnor(testTruthyValue, testTruthyValue)) // true
 console.log(xnor(testFalsyValue, testFalsyValue)) // true
 ```
-
----
-
-## VALIDATION UTILITIES
 

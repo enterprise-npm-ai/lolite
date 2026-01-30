@@ -159,6 +159,16 @@ enterpriseTest("Lolite Enterprise-Grade Tests", (assert) => {
     "sample should return the single element in a single-element array\n"
   )
 
+  // --- TIMES ---
+  assert(Array.isArray(lolite.times(2)), "times should return an array")
+  assert(lolite.times(3).length === 3, "times should return an array of the correct length")
+  assert(JSON.stringify(lolite.times(3)) === "[0,1,2]", "times should default to identity for values")
+  assert(JSON.stringify(lolite.times(2, (i) => i * 2)) === "[0,2]", "times should apply the iteratee function")
+  assert(JSON.stringify(lolite.times(0)) === "[]", "times should return an empty array for 0")
+  assert(JSON.stringify(lolite.times(-1)) === "[]", "times should handle negative numbers gracefully (via array.from)")
+  assert(JSON.stringify(lolite.times("2")) === "[0,1]", "times should coerce string numbers via array-like length")
+  assert(JSON.stringify(lolite.times(NaN)) === "[]", "times should return empty array for NaN\n")
+
   // ---  ADDITION ---
   assert(lolite.add(one, one) === 2, "add should sum positive integers")
   assert(lolite.add(-5, -10) === -15, "add should sum negative integers")
@@ -766,6 +776,19 @@ enterpriseTest("Lolite Enterprise-Grade Tests", (assert) => {
   assert(isnan(lolite.stubNaN(1, 2, 3)), "stubNaN should ignore arguments and return NaN")
   assert(isnan(lolite.stubNaN("anything")), "stubNaN should always return NaN regardless of input")
   assert(lolite.stubNaN() !== lolite.stubNaN(), "stubNaN should return NaN which is not equal to itself\n")
+
+  // --- NOW ---
+  assert(lolite.isNumber(lolite.now()), "now should return a number primitive")
+  assert(lolite.isSafeInteger(lolite.now()), "now should return a safe integer")
+  assert(lolite.now() > 1735689600000, "now should be a timestamp after Jan 1st 2025")
+  
+  const timeA = lolite.now()
+  const timeB = lolite.now()
+  assert(timeB >= timeA, "time should move forward or stay equal (monotonically non-decreasing)")
+
+  const start = lolite.now()
+  const end = lolite.now()
+  assert(lolite.isNumber(lolite.subtract(end, start)), "now delta should be a valid lolite.subtract result\n")
 })
 
 printAuditSummary()

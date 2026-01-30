@@ -17,6 +17,7 @@ const lolite = {
   tail: require("./lib/tail"),
   initial: require("./lib/initial"),
   sample: require("./lib/sample"),
+  times: require("./lib/times"),
 
   add: require("./lib/add"),
   subtract: require("./lib/subtract"),
@@ -79,6 +80,8 @@ const lolite = {
   stubTrue: require("./lib/stubTrue"),
   stubFalse: require("./lib/stubFalse"),
   stubNaN: require("./lib/stubNaN"),
+
+  now: require("./lib/now")
 }
 
 module.exports = lolite

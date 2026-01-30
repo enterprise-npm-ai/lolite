@@ -1,5 +1,5 @@
 // Type definitions for LoLite
-// Project: https://github.com/enterprise-npm-ai/lolite
+// Project: https://github.com/10xly/lolite
 
 declare interface PrivateUtils {
   arrayOfAllBooleans: boolean[]
@@ -69,6 +69,18 @@ export function initial<T>(array: T[]): T[] | undefined
  * @returns A random element from the array.
  */
 export function sample(array: array): any
+
+/**
+ * Invokes the iteratee `number` times, returning an array of the results of each invocation.
+ * The iteratee is invoked with one argument: (index).
+ * * @param number - The number of times to invoke the iteratee
+ * @param iteratee - The function invoked per iteration
+ * @returns A new array of the results of each invocation
+ */
+export function times<T = any>(
+  number: number,
+  iteratee?: (index: number) => T
+): T[]
 
 /**
  * Adds two numbers.
@@ -472,3 +484,9 @@ export function stubFalse(): boolean
  * @returns NaN
  */
 export function stubNaN(): number
+
+/**
+ * Gets the number of milliseconds that have elapsed since the Unix epoch.
+ * @returns The current Unix timestamp in milliseconds.
+ */
+export function now(): number

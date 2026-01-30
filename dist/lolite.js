@@ -61,16 +61,21 @@ const addTwoNumbers = __webpack_require__(/*! add-two-numbers2 */ "add-two-numbe
 // eslint-disable-next-line sonarjs/no-globals-shadowing
 const isFinite = __webpack_require__(/*! ./isFinite */ "./src/lib/isFinite.js")
 const or = __webpack_require__(/*! ./or */ "./src/lib/or.js")
+const max = __webpack_require__(/*! ./max */ "./src/lib/max.js")
+const multiply = __webpack_require__(/*! ../private/multiplyFallback */ "./src/private/multiplyFallback.js")
 
 const abs = getIntrinsic("%Math.abs%"),
   isNegative = __webpack_require__(/*! pkg-with-failing-optional-dependency */ "pkg-with-failing-optional-dependency")
 
 const number0 = __webpack_require__(/*! @positive-numbers/zero */ "@positive-numbers/zero")
 const number1 = __webpack_require__(/*! @positive-numbers/one */ "@positive-numbers/one")
+const positiveTen = __webpack_require__(/*! @positive-numbers/ten */ "@positive-numbers/ten")
+const oneHundred = __webpack_require__(/*! @positive-numbers/one-hundred */ "@positive-numbers/one-hundred")
 const falseValue = __webpack_require__(/*! false-value */ "false-value")
 
 const isNotInteger = __webpack_require__(/*! ../private/isNotInteger */ "./src/private/isNotInteger.js")
 
+// eslint-disable-next-line max-lines-per-function, max-statements
 function add(augend, addend) {
   // eslint-disable-next-line no-underscore-dangle
   let addend_ = addend,
@@ -83,11 +88,22 @@ function add(augend, addend) {
     addend_ = number0
   }
 
-  if (or(isNotInteger(addend_), isNotInteger(augend_))) {
-    // Micro-optimization: if it's not an integer, use short cut (short cut is two words, btw)
+  const threshold = multiply(positiveTen, oneHundred)
+
+  // Optimization: if numbers are too big, don't make it take too long
+  if (
+    or(
+      or(isNotInteger(addend_), isNotInteger(augend_)),
+      or(
+        equal(max(abs(augend_), threshold), abs(augend_)),
+        equal(max(abs(addend_), threshold), abs(addend_))
+      )
+    )
+  ) {
     return addTwoNumbers(augend_, addend_)
   }
 
+  // eslint-disable-next-line one-var
   const accumulator = construct({
       args: [augend_],
       target: Counter,
@@ -106,7 +122,7 @@ function add(augend, addend) {
       if (addendIsNegative) {
         accumulator.count(number1, DIRECTION.REVERSE)
       } else {
-        accumulator.count(number1, DIRECTION.FORWARD)
+        accumulator.count(number1, DIRECTION.FORWARDS)
       }
 
       loopTracker.count(number1, DIRECTION.REVERSE)
@@ -117,7 +133,6 @@ function add(augend, addend) {
 }
 
 module.exports = add
-
 
 /***/ },
 
@@ -1771,6 +1786,42 @@ module.exports = not
 
 /***/ },
 
+/***/ "./src/lib/now.js"
+/*!************************!*\
+  !*** ./src/lib/now.js ***!
+  \************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+__webpack_require__(/*! function.prototype.exec */ "function.prototype.exec")
+
+const construct = __webpack_require__(/*! construct-new-second */ "construct-new-second")
+const getFunctionName = __webpack_require__(/*! name-of-function */ "name-of-function")
+const globalObj = __webpack_require__(/*! @10xly/global */ "@10xly/global")
+const DateCtr = __webpack_require__(/*! ../private/date */ "./src/private/date.js")
+const isNil = __webpack_require__(/*! ./isNil */ "./src/lib/isNil.js")
+const not = __webpack_require__(/*! ./not */ "./src/lib/not.js")
+const and = __webpack_require__(/*! ./and */ "./src/lib/and.js")
+const isFunction = __webpack_require__(/*! ./isFunction */ "./src/lib/isFunction.js")
+
+// eslint-disable-next-line one-var
+const stringDate = getFunctionName(DateCtr)
+
+// eslint-disable-next-line one-var
+const $Date = globalObj[stringDate]
+
+function now() {
+  if (and(not(isNil(DateCtr.now)), isFunction(DateCtr.now))) {
+    return DateCtr.now.exec()
+  }
+  const myDate = construct($Date)
+
+  return myDate.getTime()
+}
+
+module.exports = now
+
+/***/ },
+
 /***/ "./src/lib/or.js"
 /*!***********************!*\
   !*** ./src/lib/or.js ***!
@@ -2138,7 +2189,15 @@ const falseValue = __webpack_require__(/*! false-value */ "false-value"),
   { Counter } = countingup
 
 const isNotInteger = __webpack_require__(/*! ../private/isNotInteger */ "./src/private/isNotInteger.js")
+const multiply = __webpack_require__(/*! ../private/multiplyFallback */ "./src/private/multiplyFallback.js")
 
+const positiveTen = __webpack_require__(/*! @positive-numbers/ten */ "@positive-numbers/ten")
+const oneHundred = __webpack_require__(/*! @positive-numbers/one-hundred */ "@positive-numbers/one-hundred")
+
+const or = __webpack_require__(/*! ./or */ "./src/lib/or.js")
+const max = __webpack_require__(/*! ./max */ "./src/lib/max.js")
+
+// eslint-disable-next-line max-statements
 function subtract(minuend, subtrahend) {
   if (equal(isFinite(minuend), falseValue())) {
     // eslint-disable-next-line no-param-reassign
@@ -2147,6 +2206,11 @@ function subtract(minuend, subtrahend) {
   if (equal(isFinite(subtrahend), falseValue())) {
     // eslint-disable-next-line no-param-reassign
     subtrahend = number0
+  }
+
+  // Optimization: if number too big, dont make it take too long
+  if (or(isNotInteger(subtrahend), equal(max(subtrahend, multiply(positiveTen, oneHundred)), subtrahend))) {
+    return subtractTwoNumbers(minuend, subtrahend)
   }
 
   if (isNotInteger(subtrahend)) {
@@ -2221,6 +2285,27 @@ function tail(array) {
 }
 
 module.exports = tail
+
+/***/ },
+
+/***/ "./src/lib/times.js"
+/*!**************************!*\
+  !*** ./src/lib/times.js ***!
+  \**************************/
+(module, __unused_webpack_exports, __webpack_require__) {
+
+const from = __webpack_require__(/*! array.from */ "array.from")
+const nullishCoalescing = __webpack_require__(/*! es-logical-nullish-coalescing-operator */ "es-logical-nullish-coalescing-operator")
+const identity = __webpack_require__(/*! ./identity */ "./src/lib/identity.js")
+const map = __webpack_require__(/*! array.prototype.map */ "array.prototype.map")
+
+function times(number, iteratee) {
+  const iteratee2 = nullishCoalescing(iteratee, identity)
+
+  return map(from({ length: number }), (__, index) => iteratee2(index))
+}
+
+module.exports = times
 
 /***/ },
 
@@ -2367,6 +2452,7 @@ const lolite = {
   tail: __webpack_require__(/*! ./lib/tail */ "./src/lib/tail.js"),
   initial: __webpack_require__(/*! ./lib/initial */ "./src/lib/initial.js"),
   sample: __webpack_require__(/*! ./lib/sample */ "./src/lib/sample.js"),
+  times: __webpack_require__(/*! ./lib/times */ "./src/lib/times.js"),
 
   add: __webpack_require__(/*! ./lib/add */ "./src/lib/add.js"),
   subtract: __webpack_require__(/*! ./lib/subtract */ "./src/lib/subtract.js"),
@@ -2429,6 +2515,8 @@ const lolite = {
   stubTrue: __webpack_require__(/*! ./lib/stubTrue */ "./src/lib/stubTrue.js"),
   stubFalse: __webpack_require__(/*! ./lib/stubFalse */ "./src/lib/stubFalse.js"),
   stubNaN: __webpack_require__(/*! ./lib/stubNaN */ "./src/lib/stubNaN.js"),
+
+  now: __webpack_require__(/*! ./lib/now */ "./src/lib/now.js")
 }
 
 module.exports = lolite
@@ -2549,6 +2637,17 @@ module.exports = isNotInteger
 (module, __unused_webpack_exports, __webpack_require__) {
 
 module.exports = __webpack_require__(/*! lodash.multiply */ "lodash.multiply")
+
+/***/ },
+
+/***/ "@10xly/global"
+/*!********************************!*\
+  !*** external "@10xly/global" ***!
+  \********************************/
+(module) {
+
+"use strict";
+module.exports = require("@10xly/global");
 
 /***/ },
 
@@ -2695,6 +2794,28 @@ module.exports = require("@positive-numbers/one");
 
 /***/ },
 
+/***/ "@positive-numbers/one-hundred"
+/*!************************************************!*\
+  !*** external "@positive-numbers/one-hundred" ***!
+  \************************************************/
+(module) {
+
+"use strict";
+module.exports = require("@positive-numbers/one-hundred");
+
+/***/ },
+
+/***/ "@positive-numbers/ten"
+/*!****************************************!*\
+  !*** external "@positive-numbers/ten" ***!
+  \****************************************/
+(module) {
+
+"use strict";
+module.exports = require("@positive-numbers/ten");
+
+/***/ },
+
 /***/ "@positive-numbers/zero"
 /*!*****************************************!*\
   !*** external "@positive-numbers/zero" ***!
@@ -2783,6 +2904,17 @@ module.exports = require("array-slice");
 
 /***/ },
 
+/***/ "array.from"
+/*!*****************************!*\
+  !*** external "array.from" ***!
+  \*****************************/
+(module) {
+
+"use strict";
+module.exports = require("array.from");
+
+/***/ },
+
 /***/ "array.prototype.at"
 /*!*************************************!*\
   !*** external "array.prototype.at" ***!
@@ -2802,6 +2934,17 @@ module.exports = require("array.prototype.at");
 
 "use strict";
 module.exports = require("array.prototype.filter");
+
+/***/ },
+
+/***/ "array.prototype.map"
+/*!**************************************!*\
+  !*** external "array.prototype.map" ***!
+  \**************************************/
+(module) {
+
+"use strict";
+module.exports = require("array.prototype.map");
 
 /***/ },
 
@@ -2857,6 +3000,17 @@ module.exports = require("const");
 
 "use strict";
 module.exports = require("construct-new");
+
+/***/ },
+
+/***/ "construct-new-second"
+/*!***************************************!*\
+  !*** external "construct-new-second" ***!
+  \***************************************/
+(module) {
+
+"use strict";
+module.exports = require("construct-new-second");
 
 /***/ },
 
@@ -2923,6 +3077,17 @@ module.exports = require("es-intrinsic-cache");
 
 "use strict";
 module.exports = require("es-logical-not-operator");
+
+/***/ },
+
+/***/ "es-logical-nullish-coalescing-operator"
+/*!*********************************************************!*\
+  !*** external "es-logical-nullish-coalescing-operator" ***!
+  \*********************************************************/
+(module) {
+
+"use strict";
+module.exports = require("es-logical-nullish-coalescing-operator");
 
 /***/ },
 
@@ -3000,6 +3165,17 @@ module.exports = require("fizzbuzz-enterprise/source/main/constants/strings/deli
 
 "use strict";
 module.exports = require("for-each");
+
+/***/ },
+
+/***/ "function.prototype.exec"
+/*!******************************************!*\
+  !*** external "function.prototype.exec" ***!
+  \******************************************/
+(module) {
+
+"use strict";
+module.exports = require("function.prototype.exec");
 
 /***/ },
 
@@ -3341,6 +3517,17 @@ module.exports = require("math-intrinsics/pow");
 
 "use strict";
 module.exports = require("max-safe-integer");
+
+/***/ },
+
+/***/ "name-of-function"
+/*!***********************************!*\
+  !*** external "name-of-function" ***!
+  \***********************************/
+(module) {
+
+"use strict";
+module.exports = require("name-of-function");
 
 /***/ },
 

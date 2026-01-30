@@ -1,12 +1,12 @@
 {
   "name": "lolite.flatten",
-  "version": "1.1.16",
+  "version": "1.1.17",
   "main": "src/lib/flatten.js",
   "license": "EGPSL10X-1.0",
   "author": "10x'ly Made Software Ventures AB",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/enterprise-npm-ai/lolite.git"
+    "url": "git+https://github.com/10xly/lolite.git"
   },
   "dependencies": {
     "uncurried-intrinsics": "^1.0.2",

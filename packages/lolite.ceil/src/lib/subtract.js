@@ -14,7 +14,15 @@ const falseValue = require("false-value"),
   { Counter } = countingup
 
 const isNotInteger = require("../private/isNotInteger")
+const multiply = require("../private/multiplyFallback")
 
+const positiveTen = require("@positive-numbers/ten")
+const oneHundred = require("@positive-numbers/one-hundred")
+
+const or = require("./or")
+const max = require("./max")
+
+// eslint-disable-next-line max-statements
 function subtract(minuend, subtrahend) {
   if (equal(isFinite(minuend), falseValue())) {
     // eslint-disable-next-line no-param-reassign
@@ -23,6 +31,11 @@ function subtract(minuend, subtrahend) {
   if (equal(isFinite(subtrahend), falseValue())) {
     // eslint-disable-next-line no-param-reassign
     subtrahend = number0
+  }
+
+  // Optimization: if number too big, dont make it take too long
+  if (or(isNotInteger(subtrahend), equal(max(subtrahend, multiply(positiveTen, oneHundred)), subtrahend))) {
+    return subtractTwoNumbers(minuend, subtrahend)
   }
 
   if (isNotInteger(subtrahend)) {

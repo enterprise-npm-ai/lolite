@@ -1,12 +1,12 @@
 {
   "name": "lolite.compact",
-  "version": "1.1.16",
+  "version": "1.1.17",
   "main": "src/lib/compact.js",
   "license": "EGPSL10X-1.0",
   "author": "10x'ly Made Software Ventures AB",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/enterprise-npm-ai/lolite.git"
+    "url": "git+https://github.com/10xly/lolite.git"
   },
   "dependencies": {
     "lodash.toarray": "^4.4.0",
