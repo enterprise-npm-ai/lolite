@@ -45,19 +45,43 @@ const originalBody = bodyMatch[1]
 let atomicBody = originalBody.replace(/lolite\.([a-zA-Z0-9_]+)/g, "$1")
 atomicBody = atomicBody.replace(/([a-zA-Z0-9_]+)\.__private\./g, "")
 
-// 5. Construct with defensive semicolons for IIFE safety
+// 5. Create the Browser version of the body
+const browserBody = originalBody.replace(/lolite\./g, "loliteBrowser.")
+
+// 6. Construct with defensive blocks and environment shimming
 const finalContent = baseContent.replace(
   bodyRegex,
-  `enterpriseTest("Lolite Enterprise-Grade Tests (Monolith + Atomic)", (assert) => {
-  // SCOPE 1: MONOLITHIC
-  ;{
-  ${originalBody}
+  `enterpriseTest("Lolite Enterprise-Grade Tests (Monolith + Atomic + Browser)", (assert) => {
+  // SCOPE 1: MONOLITHIC (Source)
+  {
+${originalBody}
   }
 
-  // SCOPE 2: ATOMIC
-  ;{
-  ${atomicRequires}
+  // SCOPE 2: ATOMIC (Individual NPM Packages)
+  {
+${atomicRequires}
     ${atomicBody}
+  }
+
+  // SCOPE 3: BROWSER (Webpack UMD Bundle with Node-Shim)
+  {
+    // Inject browser environment for the UMD loader
+    const originalWindow = global.window
+    const originalSelf = global.self
+    
+    global.window = global
+    global.self = global
+    
+    // Load your browser mocks to satisfy the bundle's internal requirements
+    require("../../misc/browser-mocks.js")
+    
+    const loliteBrowser = require("../../browser/index.js")
+    
+${browserBody}
+
+    // Cleanup to prevent bleeding into other tests
+    global.window = originalWindow
+    global.self = originalSelf
   }
 })`
 )

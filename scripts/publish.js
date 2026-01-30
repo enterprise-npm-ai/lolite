@@ -2,16 +2,8 @@ const fs = require("fs")
 const path = require("path")
 const { execSync } = require("child_process")
 
-const PACKAGES_DIR = path.join(__dirname, "..", "packages")
+const ROOT_DIRS = ["packages", "browser"]
 
-if (!fs.existsSync(PACKAGES_DIR)) {
-  console.error("Packages directory not found. Run 'npm run buildPackages' first.")
-  process.exit(1)
-}
-
-const packages = fs.readdirSync(PACKAGES_DIR)
-
-// Get changed files in the last commit
 let changedFiles = []
 try {
   changedFiles = execSync("git diff --name-only HEAD~1 HEAD", { stdio: "pipe" })
@@ -22,50 +14,59 @@ try {
   console.error("Failed to get git changes:", e.message)
 }
 
-console.log(`Analyzing ${packages.length} packages for enterprise-grade changes...\n`)
+ROOT_DIRS.forEach((dirName) => {
+  const absoluteDirPath = path.join(__dirname, "..", dirName)
 
-packages.forEach((pkg) => {
-  const pkgPath = path.join(PACKAGES_DIR, pkg)
-  if (!fs.statSync(pkgPath).isDirectory()) return
-
-  // Skip if folder hasn't changed
-  const folderChanged = changedFiles.some((file) => file.startsWith(`packages/${pkg}/`))
-  if (!folderChanged) {
-    console.log(`[SKIP] ${pkg} has no changes in this commit.`)
+  if (!fs.existsSync(absoluteDirPath)) {
+    console.warn(`[WARN] Directory ${dirName} not found. Skipping.`)
     return
   }
 
-  const pkgJsonPath = path.join(pkgPath, "package.json")
-  if (!fs.existsSync(pkgJsonPath)) return
+  const items = fs.readdirSync(absoluteDirPath)
 
-  const pkgJson = require(pkgJsonPath)
-  const name = pkgJson.name
-  const version = pkgJson.version
+  items.forEach((item) => {
+    const itemPath = path.join(absoluteDirPath, item)
+    if (!fs.statSync(itemPath).isDirectory()) return
 
-  try {
-    // Double check with the registry to see if this specific version is already taken
-    try {
-      const versions = JSON.parse(
-        execSync(`npm view ${name} versions --json`, { stdio: "pipe" }).toString()
-      )
-      if (Array.isArray(versions) && versions.includes(version)) {
-        console.log(`[NOTE] ${name} is unchanged. Skipping.`)
-        return
-      }
-    } catch (e) {
-      // Package might not exist yet
+    // Skip if folder hasn't changed
+    const folderChanged = changedFiles.some((file) => file.startsWith(`${dirName}/${item}/`))
+    if (!folderChanged) {
+      console.log(`[SKIP] ${item} in ${dirName} has no changes.`)
+      return
     }
 
-    console.log(`[PUBLISHING] ${name}@${version}...`)
-    execSync("npm publish --access public", {
-      cwd: pkgPath,
-      stdio: "inherit",
-    })
+    const pkgJsonPath = path.join(itemPath, "package.json")
+    if (!fs.existsSync(pkgJsonPath)) return
 
-    console.log(`[SUCCESS] ${name} deployed.\n`)
-  } catch (error) {
-    console.error(`[ERROR] Failed to process ${name}:`, error.message)
-  }
+    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, "utf8"))
+    const name = pkgJson.name
+    const version = pkgJson.version
+
+    try {
+      // Registry check to avoid 403 errors on existing versions
+      try {
+        const versions = JSON.parse(
+          execSync(`npm view ${name} versions --json`, { stdio: "pipe" }).toString()
+        )
+        if (Array.isArray(versions) && versions.includes(version)) {
+          console.log(`[NOTE] ${name}@${version} already exists. Skipping.`)
+          return
+        }
+      } catch (e) {
+        // Package doesn't exist yet or npm view failed
+      }
+
+      console.log(`[PUBLISHING] ${name}@${version} from ${dirName}...`)
+      execSync("npm publish --access public", {
+        cwd: itemPath,
+        stdio: "inherit",
+      })
+
+      console.log(`[SUCCESS] ${name} deployed.\n`)
+    } catch (error) {
+      console.error(`[ERROR] Failed to process ${name}:`, error.message)
+    }
+  })
 })
 
-console.log("Enterprise deployment sequence complete.")
+console.log("Deployment sequence complete.")

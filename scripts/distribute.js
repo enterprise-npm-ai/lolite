@@ -6,15 +6,22 @@ const crypto = require("crypto")
 const { execSync } = require("child_process")
 
 const FORCED_DEPENDENCIES = {
-  "lolite.__private.date": ["date"],
+  "lolite.__private.date": ["date"]
 }
 
+const args = process.argv.slice(2)
+const isDryRun = args.includes("--dry-run")
+
 /* -------------------------------------------------- */
-/* Logging helpers                                     */
+/* Logging helpers                                    */
 /* -------------------------------------------------- */
 const log = (msg) => console.log(`🔍 ${msg}`)
 const step = (msg) => console.log(`📦 ${msg}`)
 const done = (msg) => console.log(`✅ ${msg}`)
+
+if (isDryRun) {
+  log("Running in DRY RUN mode. Skipping version/hash checks.")
+}
 
 /* -------------------------------------------------- */
 /* Paths & inputs                                     */
@@ -29,7 +36,7 @@ const parentPkg = require(path.join(ROOT, "package.json"))
 const parentReadme = fs.readFileSync(path.join(ROOT, "README.md"), "utf8")
 
 if (!fs.existsSync(DIST)) {
-  log("Creating packages directory.  ")
+  log("Creating packages directory.")
   fs.mkdirSync(DIST)
 }
 
@@ -61,7 +68,7 @@ function getExternalPackage(dep) {
 }
 
 /* -------------------------------------------------- */
-/* Hashing & npm helpers                               */
+/* Hashing & npm helpers                              */
 /* -------------------------------------------------- */
 function hashDir(dir) {
   const hash = crypto.createHash("sha256")
@@ -89,7 +96,7 @@ function hashDir(dir) {
 function getLatestNpmVersion(pkgName) {
   try {
     return execSync(`npm view ${pkgName} version`, {
-      stdio: ["ignore", "pipe", "ignore"],
+      stdio: ["ignore", "pipe", "ignore"]
     })
       .toString()
       .trim()
@@ -98,27 +105,14 @@ function getLatestNpmVersion(pkgName) {
   }
 }
 
-function getPublishedHash(pkgName, version) {
-  try {
-    return execSync(
-      `npm view ${pkgName}@${version} dist.tarball`,
-      { stdio: ["ignore", "pipe", "ignore"] }
-    )
-      .toString()
-      .trim()
-  } catch {
-    return null
-  }
-}
-
 /* -------------------------------------------------- */
-/* Dependency collection                               */
+/* Dependency collection                              */
 /* -------------------------------------------------- */
 function collectDeps(entryFile, seenFiles = new Set(), externalDeps = new Set()) {
   if (seenFiles.has(entryFile)) return { seenFiles, externalDeps }
   seenFiles.add(entryFile)
 
-  log(`Scanning ${path.relative(ROOT, entryFile)}.  `)
+  log(`Scanning ${path.relative(ROOT, entryFile)}.`)
 
   const code = fs.readFileSync(entryFile, "utf8")
   const requires = parseRequires(code)
@@ -141,7 +135,7 @@ function collectDeps(entryFile, seenFiles = new Set(), externalDeps = new Set())
     } else {
       const pkg = getExternalPackage(req)
       externalDeps.add(pkg)
-      log(`Found external dependency: ${pkg}.  `)
+      log(`Found external dependency: ${pkg}.`)
     }
   }
 
@@ -205,7 +199,7 @@ function buildPackage(name, entryFile, type) {
   const pkgDir = path.join(DIST, pkgName)
   const srcDir = path.join(pkgDir, "src")
 
-  step(`Building ${pkgName}.  `)
+  step(`Building ${pkgName}.`)
 
   fs.mkdirSync(srcDir, { recursive: true })
 
@@ -240,29 +234,33 @@ function buildPackage(name, entryFile, type) {
       : `src/lib/${cleanName}.js`
 
   let version = parentPkg.version
-  const localHash = hashDir(pkgDir)
-  const npmVersion = getLatestNpmVersion(pkgName)
 
-  if (npmVersion) {
-    log(`Checking published version ${npmVersion}.  `)
-    try {
-      const tmp = fs.mkdtempSync(path.join(require("os").tmpdir(), "lolite-"))
-      execSync(`npm pack ${pkgName}@${npmVersion}`, {
-        cwd: tmp,
-        stdio: "ignore",
-      })
+  // Only handle versioning/hashing logic if NOT a dry run
+  if (!isDryRun) {
+    const localHash = hashDir(pkgDir)
+    const npmVersion = getLatestNpmVersion(pkgName)
 
-      const tgz = fs.readdirSync(tmp).find((f) => f.endsWith(".tgz"))
-      execSync(`tar -xzf ${tgz}`, { cwd: tmp, stdio: "ignore" })
+    if (npmVersion) {
+      log(`Checking published version ${npmVersion}.`)
+      try {
+        const tmp = fs.mkdtempSync(path.join(require("os").tmpdir(), "lolite-"))
+        execSync(`npm pack ${pkgName}@${npmVersion}`, {
+          cwd: tmp,
+          stdio: "ignore"
+        })
 
-      const publishedHash = hashDir(path.join(tmp, "package"))
+        const tgz = fs.readdirSync(tmp).find((f) => f.endsWith(".tgz"))
+        execSync(`tar -xzf ${tgz}`, { cwd: tmp, stdio: "ignore" })
 
-      if (publishedHash === localHash) {
-        version = npmVersion
-        log(`No content changes detected.  Reusing ${npmVersion}.  `)
+        const publishedHash = hashDir(path.join(tmp, "package"))
+
+        if (publishedHash === localHash) {
+          version = npmVersion
+          log(`No content changes detected. Reusing ${npmVersion}.`)
+        }
+      } catch {
+        log("Unable to compare with npm package. Publishing normally.")
       }
-    } catch {
-      log("Unable to compare with npm package.  Publishing normally.  ")
     }
   }
 
@@ -273,7 +271,7 @@ function buildPackage(name, entryFile, type) {
     license: parentPkg.license,
     author: parentPkg.author,
     repository: parentPkg.repository,
-    dependencies,
+    dependencies
   }
 
   fs.writeFileSync(
@@ -288,22 +286,22 @@ function buildPackage(name, entryFile, type) {
 
   fs.writeFileSync(path.join(pkgDir, "README.md"), readme)
 
-  done(`${pkgName} ready (${version}).  `)
+  done(`${pkgName} ready (${version}).`)
 }
 
 /* -------------------------------------------------- */
-/* Execution                                           */
+/* Execution                                          */
 /* -------------------------------------------------- */
-log("Processing public utilities.  ")
+log("Processing public utilities.")
 for (const file of getJsFiles(LIB)) {
   const name = path.basename(file, ".js")
   buildPackage(name, path.join(LIB, file), "lib")
 }
 
-log("Processing private utilities.  ")
+log("Processing private utilities.")
 for (const file of getJsFiles(PRIVATE)) {
   const name = path.basename(file, ".js")
   buildPackage(`__private.${name}`, path.join(PRIVATE, file), "private")
 }
 
-done("All LoLite packages generated successfully.  🎉")
+done("All LoLite packages generated successfully. 🎉")
