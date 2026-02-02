@@ -36,19 +36,6 @@ const coreMocks = {
 }
 
 globalThis.process = coreMocks
-globalThis.require = function require(x) {
-  if (x.includes("date")) {
-    return Date
-  } else {
-    throw new Error("uhh")
-  }
-}
-globalThis.require.resolve = function x(x) {
-  if (x.includes("date")) {
-    return "date"
-  }
-  throw new Error("uhh")
-}
 if (typeof window === "undefined") globalThis.window = globalThis
 if (typeof self === "undefined") globalThis.self = globalThis
 
