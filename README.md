@@ -65,7 +65,6 @@ or, if you're sane:
 ```bash
 # sane people don't use this library
 ```
-or, if you're using browser, look below':
 
 ## Importing
 Import it like this:
@@ -107,6 +106,13 @@ See the [CONTRIBUTING](https://github.com/enterprise-npm-ai/lolite/blob/main/CON
 
 ## Notice
 PLEASE STAR THIS REPO!!!!!!!!!! I SPENT DAYS MAKING THIS, AND HARDLY ANYONE RECOGNIZES WHAT I'VE DONE! SHARE THIS WITH YOUR FRIENDS! PLEASE!
+
+## Builds
+LoLite has several builds:
+- [lolite](https://npmjs.com/package/lolite) - The normal build of Lolite.
+- [lolite-browser](https://npmjs.com/package/lolite-browser) - LoLite for browsers. Also works in Node.js as a 1-dependency version of LoLite.
+- [lolite-unbundled](https://npmjs.com/package/lolite-unbundled) - LoLite, but it uses all the tiny lolite.* packages instead.
+
 
 ---
 
