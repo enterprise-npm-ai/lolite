@@ -1,7 +1,7 @@
 {
   "name": "lolite",
   "private": false,
-  "version": "1.1.20",
+  "version": "1.1.21",
   "description": "The 10x Utility Library",
   "keywords": [
     "lolite",
@@ -123,7 +123,8 @@
     "buildDry": "npm run buildLolite && npm run buildPackagesDry && npm run buildTests",
     "copy-types1": "node build/copy src/lolite.d.ts dist/lolite.d.ts",
     "copy-types2": "node build/copy src/lolite.d.ts builds/browser/lolite.d.ts",
-    "copy-types": "npm run copy-types1 && npm run copy-types2",
+    "copy-types3": "node build/copy src/lolite.d.ts builds/unbundled/lolite.d.ts",
+    "copy-types": "npm run copy-types1 && npm run copy-types2 && npm run copy-types3",
     "cleanDist": "rimraf ./dist",
     "cleanPackages": "rimraf ./packages",
     "cleanTestDist": "rimraf ./test/dist",

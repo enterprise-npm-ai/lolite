@@ -26,31 +26,42 @@ const done = (msg) => console.log(`✅ ${msg}`)
 function parseExports(filepath) {
   const content = fs.readFileSync(filepath, "utf8")
   
-  // Find the lolite object definition
   const objectMatch = content.match(/const lolite = \{([\s\S]*?)\}\s*module\.exports/m)
   if (!objectMatch) {
     throw new Error("Could not find lolite object in src/lolite.js")
   }
   
   const objectBody = objectMatch[1]
-  const loliteExports = {}
-  
-  // Parse each line looking for: key: require("./path")
-  const requireRegex = /(\w+):\s*require\(["']\.\/(?:lib|private)\/(\w+)["']\)/g
-  let match
-  
-  while ((match = requireRegex.exec(objectBody))) {
-    const [, exportName, fileName] = match
-    loliteExports[exportName] = fileName
+  const result = {
+    privateLevel: {},
+    topLevel: {}
   }
   
-  log(`Parsed ${Object.keys(loliteExports).length} exports from src/lolite.js`)
+  // 1. Isolate and parse the __private block
+  const privateBlockMatch = objectBody.match(/__private:\s*\{([\s\S]*?)\}/)
+  if (privateBlockMatch) {
+    const privateBody = privateBlockMatch[1]
+    const privateRegex = /(\w+):\s*require\(["']\.\/private\/(\w+)["']\)/g
+    let m
+    while ((m = privateRegex.exec(privateBody))) {
+      result.privateLevel[m[1]] = m[2]
+    }
+  }
+
+  // 2. Parse top-level exports (only those coming from ./lib/)
+  const topLevelRegex = /(\w+):\s*require\(["']\.\/lib\/(\w+)["']\)/g
+  let m
+  while ((m = topLevelRegex.exec(objectBody))) {
+    result.topLevel[m[1]] = m[2]
+  }
   
-  return loliteExports
+  log(`Parsed ${Object.keys(result.topLevel).length} public and ${Object.keys(result.privateLevel).length} private exports`)
+  
+  return result
 }
 
 /* -------------------------------------------------- */
-/* Create build directory                             */
+/* Build execution                                    */
 /* -------------------------------------------------- */
 if (!fs.existsSync(BUILDS)) {
   fs.mkdirSync(BUILDS)
@@ -62,53 +73,47 @@ if (!fs.existsSync(UNBUNDLED_DIR)) {
 
 step("Building lolite-unbundled")
 
-/* -------------------------------------------------- */
-/* Parse exports from src/lolite.js                   */
-/* -------------------------------------------------- */
-const loliteExports = parseExports(SRC_LOLITE)
+const exportsData = parseExports(SRC_LOLITE)
+const dependencies = {}
 
-/* -------------------------------------------------- */
-/* Generate index.js that re-exports everything       */
-/* -------------------------------------------------- */
 const indexLines = [
   "/* eslint-disable sort-keys */",
   "/* eslint-disable perfectionist/sort-objects */",
   "const lolite = {"
 ]
 
-// Track dependencies
-const dependencies = {}
+// Generate Private block with lolite.__private prefix
+indexLines.push("  __private: {")
+for (const [exportName, fileName] of Object.entries(exportsData.privateLevel)) {
+  const pkgName = `lolite.__private.${fileName.toLowerCase()}`
+  indexLines.push(`    ${exportName}: require("${pkgName}"),`)
+  dependencies[pkgName] = "*"
+}
+indexLines.push("  },")
 
-for (const [exportName, fileName] of Object.entries(loliteExports)) {
+// Generate Top Level block
+for (const [exportName, fileName] of Object.entries(exportsData.topLevel)) {
   const pkgName = `lolite.${fileName.toLowerCase()}`
   indexLines.push(`  ${exportName}: require("${pkgName}"),`)
-  dependencies[pkgName] = parentPkg.version
+  dependencies[pkgName] = "*"
 }
 
 indexLines.push("}")
 indexLines.push("")
 indexLines.push("module.exports = lolite")
 
-const indexJs = indexLines.join("\n")
-fs.writeFileSync(path.join(UNBUNDLED_DIR, "index.js"), indexJs)
-
-log("Generated index.js")
+fs.writeFileSync(path.join(UNBUNDLED_DIR, "lolite.js"), indexLines.join("\n"))
+log("Generated lolite.js")
 
 /* -------------------------------------------------- */
-/* Generate package.json with all lolite.* deps       */
+/* Generate package.json                              */
 /* -------------------------------------------------- */
 const pkgJson = {
   name: "lolite-unbundled",
   version: parentPkg.version,
-  description: "Modular distribution of LoLite - each function as a separate dependency for maximum tree-shaking potential",
-  main: "index.js",
-  keywords: [
-    ...parentPkg.keywords,
-    "modular",
-    "unbundled", 
-    "tree-shakeable",
-    "micropackages"
-  ],
+  description: "Modular distribution of LoLite - each function as a separate dependency",
+  main: "lolite.js",
+  keywords: [...parentPkg.keywords, "modular", "unbundled"],
   homepage: parentPkg.homepage,
   bugs: parentPkg.bugs,
   repository: parentPkg.repository,
@@ -122,58 +127,26 @@ fs.writeFileSync(
   path.join(UNBUNDLED_DIR, "package.json"),
   JSON.stringify(pkgJson, null, 2)
 )
-
 log("Generated package.json")
 
 /* -------------------------------------------------- */
 /* Generate README                                    */
 /* -------------------------------------------------- */
 const depCount = Object.keys(dependencies).length
-
 const readme = `# lolite-unbundled
 
 The modular, tree-shakeable distribution of LoLite.
 
-## Why lolite-unbundled?
-
-Instead of bundling all utilities into a single file, \`lolite-unbundled\` depends on individual \`lolite.*\` packages for each function. This provides:
-
-- ✨ Maximum modularity
-- 🌳 Superior tree-shaking potential
-- 📦 Granular dependency management
-- 🚀 Enterprise-grade architecture
-
-## Installation
-
-\`\`\`bash
-npm install lolite-unbundled
-\`\`\`
-
 ## Usage
-
-Identical to regular LoLite:
 
 \`\`\`javascript
 const lolite = require("lolite-unbundled")
-
-console.log(lolite.add(2, 3)) // 5
 \`\`\`
 
-## Architecture
-
-This package contains ${depCount} individual lolite packages as dependencies, ensuring optimal code splitting and bundle optimization.
-
-## Documentation
-
-See the main [LoLite documentation](https://github.com/10xly/lolite#readme) for complete API reference.
-
-## License
-
-${parentPkg.license}
+Contains ${depCount} individual packages as dependencies.
 `
 
 fs.writeFileSync(path.join(UNBUNDLED_DIR, "README.md"), readme)
-
 log("Generated README.md")
 
 done(`lolite-unbundled ready with ${depCount} dependencies 🎉`)

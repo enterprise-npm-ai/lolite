@@ -1,12 +1,14 @@
 /* eslint-disable sort-keys */
 /* eslint-disable perfectionist/sort-objects */
 const lolite = {
-  arrayOfAllBooleans: require("lolite.arrayofallbooleans"),
-  crash: require("lolite.crash"),
-  date: require("lolite.date"),
-  invertFallback: require("lolite.invertfallback"),
-  isNotInteger: require("lolite.isnotinteger"),
-  multiplyFallback: require("lolite.multiplyfallback"),
+  __private: {
+    arrayOfAllBooleans: require("lolite.__private.arrayofallbooleans"),
+    crash: require("lolite.__private.crash"),
+    date: require("lolite.__private.date"),
+    invertFallback: require("lolite.__private.invertfallback"),
+    isNotInteger: require("lolite.__private.isnotinteger"),
+    multiplyFallback: require("lolite.__private.multiplyfallback"),
+  },
   compact: require("lolite.compact"),
   flatten: require("lolite.flatten"),
   first: require("lolite.first"),
