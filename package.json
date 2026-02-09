@@ -1,7 +1,7 @@
 {
   "name": "lolite",
   "private": false,
-  "version": "1.1.21",
+  "version": "1.1.22",
   "description": "The 10x Utility Library",
   "keywords": [
     "lolite",
@@ -235,10 +235,14 @@
     "yanoop": "^1.0.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.29.0",
     "@babel/helper-validator-identifier": "^7.28.5",
+    "@babel/preset-env": "^7.29.0",
     "@eslint/compat": "^2.0.0",
     "@eslint/js": "^9.39.2",
     "@is-(unknown)/is-nan": "^1.0.0",
+    "babel-loader": "^10.0.0",
+    "core-js": "^3.48.0",
     "depcheck": "^1.4.7",
     "enterprise-10x-testing-framework-js": "^1.0.1",
     "eslint": "^9.39.2",

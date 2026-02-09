@@ -8,7 +8,49 @@ const commonConfig = {
       name: "lolite",
     },
     globalObject: "this",
+    // This prevents Webpack from using arrow functions in the bundle wrapper
+    environment: {
+      arrowFunction: false,
+      const: false,
+      destructuring: false,
+      forOf: false,
+      module: false
+    }
   },
+  module: {
+    rules: [
+      {
+        test: /\.m?js$/,
+        exclude: /node_modules/, // Usually safe, but for ES3 you might need to compile some dependencies
+        use: {
+          loader: "babel-loader",
+          options: {
+            presets: [
+              [
+                "@babel/preset-env",
+                {
+                  // CoreJS 3 polyfills everything needed
+                  useBuiltIns: "usage",
+                  corejs: 3,
+                  // Targeting a specific old engine or just generic ES3
+                  targets: {
+                    ie: "6" 
+                  },
+                  // Ensures Babel doesn't use ES6 imports/exports in its own output
+                  modules: "commonjs"
+                }
+              ]
+            ],
+            // This is the secret sauce for ES3: it renames properties like .catch() to ["catch"]()
+            plugins: [
+              "@babel/plugin-transform-member-expression-literals",
+              "@babel/plugin-transform-property-literals"
+            ]
+          }
+        }
+      }
+    ]
+  }
 }
 
 module.exports = [
@@ -17,7 +59,7 @@ module.exports = [
     ...commonConfig,
     entry: "./src/lolite.js",
     mode: "development",
-    target: "node",
+    target: ["web", "es3"], // Explicitly tell Webpack to target ES3
     devtool: "source-map",
     externalsPresets: { node: true },
     externals: [
@@ -40,7 +82,8 @@ module.exports = [
     ...commonConfig,
     entry: [path.resolve(__dirname, "misc/browser-mocks.js"), "./src/lolite.js"],
     mode: "development",
-    target: "web",
+    target: ["web", "es3"],
+    devtool: "source-map",
     optimization: {
       minimize: false,
     },
@@ -53,7 +96,6 @@ module.exports = [
           __dirname,
           "node_modules/tw12ve/IKnowItMightBeWeirdToHaveASeparateNpmPackageForJustGettingTheValueOfTwelveButItMakesSenseTrustMe.js"
         ),
-        path: path.resolve(__dirname, "misc/browser-mocks.js")
       },
       fallback: {
         assert: false,
