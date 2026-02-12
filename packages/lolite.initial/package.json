@@ -1,0 +1,27 @@
+{
+  "name": "lolite.initial",
+  "version": "1.1.17",
+  "main": "src/lib/initial.js",
+  "license": "EGPSL10X-1.0",
+  "author": "10x'ly Made Software Ventures AB",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/10xly/lolite.git"
+  },
+  "dependencies": {
+    "@is-(unknown)/is-true": "^1.5.0",
+    "@is-(unknown)/is-false": "^1.5.0",
+    "array-filter": "^1.0.0",
+    "true-value": "^2.0.5",
+    "false-value": "^2.0.6",
+    "@is-(unknown)/is-array": "^1.0.0",
+    "undefined-is-a-function": "^0.1.0",
+    "array-slice": "^1.1.0",
+    "@extra-array/length": "^2.10.19",
+    "iszero": "^1.0.0",
+    "lodash.stubarray": "^4.13.0",
+    "@positive-numbers/zero": "^3.0.0",
+    "subtract": "^0.0.3",
+    "@positive-numbers/one": "^3.0.0"
+  }
+}

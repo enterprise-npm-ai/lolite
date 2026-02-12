@@ -1,0 +1,25 @@
+{
+  "name": "lolite.divide",
+  "version": "1.1.17",
+  "main": "src/lib/divide.js",
+  "license": "EGPSL10X-1.0",
+  "author": "10x'ly Made Software Ventures AB",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/10xly/lolite.git"
+  },
+  "dependencies": {
+    "@positive-numbers/zero": "^3.0.0",
+    "false-value": "^2.0.6",
+    "@10xly/strict-equals": "^1.0.0",
+    "@is-(unknown)/is-finite": "^1.0.0",
+    "iszero": "^1.0.0",
+    "is-negative-zero": "^2.0.3",
+    "nan-is-a-function": "^67.67.67",
+    "array-includes": "^3.1.9",
+    "object.values": "^1.2.1",
+    "map-values": "^1.0.1",
+    "const": "^1.0.0",
+    "infinities": "^1.0.1"
+  }
+}

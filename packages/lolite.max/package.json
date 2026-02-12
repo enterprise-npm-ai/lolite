@@ -1,0 +1,21 @@
+{
+  "name": "lolite.max",
+  "version": "1.1.17",
+  "main": "src/lib/max.js",
+  "license": "EGPSL10X-1.0",
+  "author": "10x'ly Made Software Ventures AB",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/10xly/lolite.git"
+  },
+  "dependencies": {
+    "bogosort": "^1.0.1",
+    "lodash.stubarray": "^4.13.0",
+    "lodash.toarray": "^4.4.0",
+    "@positive-numbers/zero": "^3.0.0",
+    "@positive-numbers/one": "^3.0.0",
+    "@10xly/strict-equals": "^1.0.0",
+    "@is-(unknown)/is-finite": "^1.0.0",
+    "false-value": "^2.0.6"
+  }
+}

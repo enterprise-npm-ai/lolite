@@ -1,0 +1,14 @@
+{
+  "name": "lolite.isnonnullobject",
+  "version": "1.1.17",
+  "main": "src/lib/isnonnullobject.js",
+  "license": "EGPSL10X-1.0",
+  "author": "10x'ly Made Software Ventures AB",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/10xly/lolite.git"
+  },
+  "dependencies": {
+    "@is-(unknown)/is-non-null-object": "^1.0.1"
+  }
+}
