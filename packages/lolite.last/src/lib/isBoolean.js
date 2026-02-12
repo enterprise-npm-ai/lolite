@@ -36,7 +36,7 @@ module.exports = function isBoolean(value) {
     isNegativeOneReal()
       ? // eslint-disable-next-line no-undef
         negativeOne
-      : // eslint-disable-next-line no-undef, no-implicit-globals, sonarjs/no-implicit-global, sonarjs/no-nested-assignment
-        (negativeOne = invert(numberOne))
+      : // eslint-disable-next-line sonarjs/no-nested-assignment
+        (globalThis.negativeOne = invert(numberOne))
   )
 }

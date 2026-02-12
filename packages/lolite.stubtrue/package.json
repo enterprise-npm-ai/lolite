@@ -1,6 +1,6 @@
 {
   "name": "lolite.stubtrue",
-  "version": "1.1.17",
+  "version": "1.1.22",
   "main": "src/lib/stubtrue.js",
   "license": "EGPSL10X-1.0",
   "author": "10x'ly Made Software Ventures AB",
@@ -11,10 +11,6 @@
   "dependencies": {
     "true-value": "^2.0.5",
     "false-value": "^2.0.6",
-    "functions-have-names": "^1.2.3",
-    "capitalize": "^2.0.4",
-    "@rightpad/concat": "^1.0.0",
-    "to-str": "^1.0.0",
     "twice-call-wrapper": "^1.2.0",
     "yanoop": "^1.0.0",
     "@identity-js/identity": "^1.2.8",

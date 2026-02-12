@@ -1647,19 +1647,15 @@ enterpriseTest("Lolite Enterprise-Grade Tests (Monolith + Atomic + Browser)", (a
 
   }
 
-  // SCOPE 3: BROWSER (Webpack UMD Bundle with Node-Shim)
+  // SCOPE 3: BROWSER
   {
-    // Inject browser environment for the UMD loader
     const originalWindow = global.window
     const originalSelf = global.self
     
     global.window = global
     global.self = global
     
-    // Load your browser mocks to satisfy the bundle's internal requirements
-    require("../../misc/browser-mocks.js")
-    
-    const loliteBrowser = require("../../browser/index.js")
+    const loliteBrowser = require("../../builds/browser/lolite.js")
     
 
   // --- ARRAY UTILITIES ---

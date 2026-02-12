@@ -39,4 +39,12 @@ globalThis.process = coreMocks
 if (typeof window === "undefined") globalThis.window = globalThis
 if (typeof self === "undefined") globalThis.self = globalThis
 
+globalThis.require = typeof require === "function" ? require : () => {
+  return Date
+}
+
+globalThis.require.resolve = typeof require === "function" && typeof require.resolve === "function" ? require.resolve : () => {
+  return "date"
+}
+
 module.exports = { ...coreMocks }

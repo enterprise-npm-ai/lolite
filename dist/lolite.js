@@ -257,22 +257,12 @@ module.exports = compact;
 
 
 
-__webpack_require__(/*! core-js/modules/es.function.name.js */ "core-js/modules/es.function.name.js");
-var functionsHaveNames = __webpack_require__(/*! functions-have-names */ "functions-have-names")();
-var capitalizeFirstLetter = __webpack_require__(/*! capitalize */ "capitalize");
-var concat = __webpack_require__(/*! @rightpad/concat */ "@rightpad/concat");
-var toString = __webpack_require__(/*! to-str */ "to-str");
+__webpack_require__(/*! core-js/modules/es.function.bind.js */ "core-js/modules/es.function.bind.js");
 var identity = __webpack_require__(/*! ./identity */ "./src/lib/identity.js");
-function constant(value) {
-  // eslint-disable-next-line func-names
-  var result = function result() {
-    return identity(value);
-  };
-  if (functionsHaveNames) {
-    result.name = concat("resolve", capitalizeFirstLetter(toString(result)));
-  }
-  return result;
-}
+// eslint-disable-next-line one-var, camelcase, unicorn/prevent-abbreviations, unicorn/no-null
+var constant = function constant(x_val) {
+  return identity.bind(null, x_val);
+};
 module.exports = constant;
 
 /***/ }),
@@ -788,6 +778,7 @@ if (hasNativeBigInts()) {
 
 
 
+__webpack_require__(/*! core-js/modules/esnext.global-this.js */ "core-js/modules/esnext.global-this.js");
 var possibilities = __webpack_require__(/*! ../private/arrayOfAllBooleans */ "./src/private/arrayOfAllBooleans.js");
 // eslint-disable-next-line no-inline-comments
 var indexOf = __webpack_require__(/*! indexof */ "indexof"); // Thanks microsoft!
@@ -822,8 +813,8 @@ module.exports = function isBoolean(value) {
   isNegativeOneReal() ?
   // eslint-disable-next-line no-undef
   negativeOne :
-  // eslint-disable-next-line no-undef, no-implicit-globals, sonarjs/no-implicit-global, sonarjs/no-nested-assignment
-  negativeOne = invert(numberOne));
+  // eslint-disable-next-line sonarjs/no-nested-assignment
+  globalThis.negativeOne = invert(numberOne));
 };
 
 /***/ }),
@@ -2570,15 +2561,8 @@ module.exports = crash_program;
 
 
 
-__webpack_require__(/*! core-js/modules/es.regexp.exec.js */ "core-js/modules/es.regexp.exec.js");
-__webpack_require__(/*! core-js/modules/es.string.replace.js */ "core-js/modules/es.string.replace.js");
-// eslint-disable-next-line no-ternary, camelcase, no-undef
-var requireFunction =  true ? require : 0;
-// eslint-disable-next-line one-var
-var $DatePath = requireFunction.resolve("date").replace("index.json", "cache");
-// eslint-disable-next-line one-var
-var $Date = requireFunction($DatePath);
-module.exports = $Date;
+__webpack_require__(/*! core-js/modules/es.date.to-string.js */ "core-js/modules/es.date.to-string.js");
+module.exports = Date;
 
 /***/ }),
 
@@ -2943,16 +2927,6 @@ module.exports = require("bogosort");
 
 /***/ }),
 
-/***/ "capitalize":
-/*!*****************************!*\
-  !*** external "capitalize" ***!
-  \*****************************/
-/***/ (function(module) {
-
-module.exports = require("capitalize");
-
-/***/ }),
-
 /***/ "const":
 /*!************************!*\
   !*** external "const" ***!
@@ -3043,6 +3017,16 @@ module.exports = require("core-js/modules/es.date.to-string.js");
 
 /***/ }),
 
+/***/ "core-js/modules/es.function.bind.js":
+/*!******************************************************!*\
+  !*** external "core-js/modules/es.function.bind.js" ***!
+  \******************************************************/
+/***/ (function(module) {
+
+module.exports = require("core-js/modules/es.function.bind.js");
+
+/***/ }),
+
 /***/ "core-js/modules/es.function.name.js":
 /*!******************************************************!*\
   !*** external "core-js/modules/es.function.name.js" ***!
@@ -3103,16 +3087,6 @@ module.exports = require("core-js/modules/es.string.iterator.js");
 
 /***/ }),
 
-/***/ "core-js/modules/es.string.replace.js":
-/*!*******************************************************!*\
-  !*** external "core-js/modules/es.string.replace.js" ***!
-  \*******************************************************/
-/***/ (function(module) {
-
-module.exports = require("core-js/modules/es.string.replace.js");
-
-/***/ }),
-
 /***/ "core-js/modules/es.symbol.description.js":
 /*!***********************************************************!*\
   !*** external "core-js/modules/es.symbol.description.js" ***!
@@ -3140,6 +3114,16 @@ module.exports = require("core-js/modules/es.symbol.iterator.js");
 /***/ (function(module) {
 
 module.exports = require("core-js/modules/es.symbol.js");
+
+/***/ }),
+
+/***/ "core-js/modules/esnext.global-this.js":
+/*!********************************************************!*\
+  !*** external "core-js/modules/esnext.global-this.js" ***!
+  \********************************************************/
+/***/ (function(module) {
+
+module.exports = require("core-js/modules/esnext.global-this.js");
 
 /***/ }),
 
@@ -3300,16 +3284,6 @@ module.exports = require("for-each");
 /***/ (function(module) {
 
 module.exports = require("function.prototype.exec");
-
-/***/ }),
-
-/***/ "functions-have-names":
-/*!***************************************!*\
-  !*** external "functions-have-names" ***!
-  \***************************************/
-/***/ (function(module) {
-
-module.exports = require("functions-have-names");
 
 /***/ }),
 

@@ -28,13 +28,6 @@ ROOT_DIRS.forEach((dirName) => {
     const itemPath = path.join(absoluteDirPath, item)
     if (!fs.statSync(itemPath).isDirectory()) return
 
-    // Skip if folder hasn't changed
-    const folderChanged = changedFiles.some((file) => file.startsWith(`${dirName}/${item}/`))
-    if (!folderChanged) {
-      console.log(`[SKIP] ${item} in ${dirName} has no changes.`)
-      return
-    }
-
     const pkgJsonPath = path.join(itemPath, "package.json")
     if (!fs.existsSync(pkgJsonPath)) return
 

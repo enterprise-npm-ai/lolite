@@ -1,5 +1,5 @@
 # lolite-browser
-LoLite for browsers.
+LoLite for browsers. Note: lolite browser support is in alpha, so this might not work.
 
 ## Usage
 ```html
@@ -8,7 +8,7 @@ LoLite for browsers.
   console.log(lolite.add(1, 2)) // 3
 </script>
 ```
-You can also use `lolite-browser` as a one-dependency replacement for the normal `lolite` package instead (note: this may not work, node.js support in lolite-browser is in beta):
+You can also use `lolite-browser` as a one-dependency replacement for the normal `lolite` package instead:
 ```js
 const lolite = require("lolite-browser")
 ```
