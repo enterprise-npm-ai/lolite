@@ -5,3 +5,4 @@ t.js
 t.txt
 test.json
 **/node_modules
+package-lock.json
